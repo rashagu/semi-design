@@ -3,7 +3,7 @@ import { handlePrevent } from "../utils/a11y";
 import { throttle, isUndefined } from "lodash";
 
 export interface PreviewImageAdapter<P = Record<string, any>, S = Record<string, any>> extends DefaultAdapter<P, S> {
-    getOriginImageSize: () => { originImageWidth: number; originImageHeight: number; }; 
+    getOriginImageSize: () => { originImageWidth: number; originImageHeight: number; };
     setOriginImageSize: (size: { originImageWidth: number; originImageHeight: number; }) => void;
     getContainerRef: () => any;
     getImageRef: () => any;
@@ -67,7 +67,7 @@ export default class PreviewImageFoundation<P = Record<string, any>, S = Record<
                 setRatio("adaptation");
             } else {
                 this.handleResizeImage();
-            } 
+            }
         }
     };
 
@@ -121,12 +121,12 @@ export default class PreviewImageFoundation<P = Record<string, any>, S = Record<
         }
     };
 
-    handleWheel = (e: React.WheelEvent<HTMLImageElement>) => {
+    handleWheel = (e: any) => {
         this.onWheel(e);
         handlePrevent(e);
     }
 
-    onWheel = throttle((e: React.WheelEvent<HTMLImageElement>): void => {
+    onWheel = throttle((e: any): void => {
         const { onZoom, zoomStep, maxZoom, minZoom } = this.getProps();
         const { currZoom } = this.getStates();
         let _zoom:number;
@@ -181,7 +181,7 @@ export default class PreviewImageFoundation<P = Record<string, any>, S = Record<
                 x: 0.5 * (containerWidth - newWidth),
                 y: 0.5 * (containerHeight - newHeight),
             };
-           
+
             newLeft = _offset.x;
             newTop= _offset.y;
         } else {
@@ -192,7 +192,7 @@ export default class PreviewImageFoundation<P = Record<string, any>, S = Record<
             newLeft = _offset.x - (newWidth - newHeight) / 2;
             newTop = _offset.y + (newWidth - newHeight) / 2;
         }
-        
+
         this.setState({
             width: newWidth,
             height: newHeight,
@@ -205,7 +205,7 @@ export default class PreviewImageFoundation<P = Record<string, any>, S = Record<
     };
 
     calcExtremeBounds = (): ExtremeBounds => {
-        const { width, height } = this.getStates(); 
+        const { width, height } = this.getStates();
         const { width: containerWidth, height: containerHeight } = this._getContainerBounds();
         let extremeLeft = containerWidth - width;
         let extremeTop = containerHeight - height;

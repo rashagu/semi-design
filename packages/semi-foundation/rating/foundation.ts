@@ -166,15 +166,15 @@ export default class RatingFoundation<P = Record<string, any>, S = Record<string
                 this._adapter.setEmptyStarFocusVisible(true);
             }
         } catch (error) {
-            warning(true, 'Warning: [Semi Rating] The current browser does not support the focus-visible'); 
+            warning(true, 'Warning: [Semi Rating] The current browser does not support the focus-visible');
         }
     }
 
-    handleStarBlur = (event: React.FocusEvent) => {
+    handleStarBlur = (event: any) => {
         const { emptyStarFocusVisible } = this.getStates();
         if (emptyStarFocusVisible) {
             this._adapter.setEmptyStarFocusVisible(false);
-        } 
+        }
     }
 }
 
@@ -201,11 +201,11 @@ export class RatingItemFoundation<P = Record<string, any>, S = Record<string, an
                 }
             }
         } catch (error) {
-            warning(true, 'Warning: [Semi Rating] The current browser does not support the focus-visible'); 
+            warning(true, 'Warning: [Semi Rating] The current browser does not support the focus-visible');
         }
     }
 
-    handleBlur = (event: React.FocusEvent, star: string) => {
+    handleBlur = (event: any, star: string) => {
         const { firstStarFocus, secondStarFocus } = this.getStates();
         if (star === 'first') {
             firstStarFocus && this._adapter.setFirstStarFocus(false);
