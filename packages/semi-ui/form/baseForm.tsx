@@ -1,4 +1,3 @@
-/* eslint-disable prefer-template, max-len, @typescript-eslint/no-unused-vars */
 import React from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
@@ -18,7 +17,8 @@ import ErrorMessage from './errorMessage';
 import FormInputGroup from './group';
 import { noop } from 'lodash';
 import '@douyinfe/semi-foundation/form/form.scss';
-import { FormInput,
+import {
+    FormInput,
     FormInputNumber,
     FormTextArea,
     FormSelect,
@@ -45,10 +45,11 @@ import {
 const prefix = cssClasses.PREFIX;
 
 interface BaseFormState {
-    formId: string;
+    formId: string
 }
-class Form extends BaseComponent<BaseFormProps, BaseFormState> {
+class Form<Values extends Record<string, any> = any> extends BaseComponent<BaseFormProps<Values>, BaseFormState> {
     static propTypes = {
+        'aria-label': PropTypes.string,
         onSubmit: PropTypes.func,
         onSubmitFail: PropTypes.func,
         /* Triggered from update, including field mount/unmount/value change/blur/verification status change/error prompt change, input parameter is formState, currentField */
@@ -56,24 +57,30 @@ class Form extends BaseComponent<BaseFormProps, BaseFormState> {
         onReset: PropTypes.func,
         // Triggered when the value of the form is updated, only when the value of the subfield changes. The entry parameter is formState.values
         onValueChange: PropTypes.func,
-        initValues: PropTypes.object,
-        getFormApi: PropTypes.func,
-        component: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
-        render: PropTypes.func,
-        validateFields: PropTypes.func,
-        style: PropTypes.object,
+        autoScrollToError: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
+        allowEmpty: PropTypes.bool,
         className: PropTypes.string,
+        component: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+        disabled: PropTypes.bool,
+        extraTextPosition: PropTypes.oneOf(strings.EXTRA_POS),
+        getFormApi: PropTypes.func,
+        initValues: PropTypes.object,
+        validateFields: PropTypes.func,
         layout: PropTypes.oneOf(strings.LAYOUT),
         labelPosition: PropTypes.oneOf(strings.LABEL_POS),
         labelWidth: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
         labelAlign: PropTypes.oneOf(strings.LABEL_ALIGN),
         labelCol: PropTypes.object, // Control labelCol {span: number, offset: number} for all field child nodes
-        wrapperCol: PropTypes.object, // Control wrapperCol {span: number, offset: number} for all field child nodes
-        allowEmpty: PropTypes.bool,
-        autoScrollToError: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
-        disabled: PropTypes.bool,
+        render: PropTypes.func,
+        style: PropTypes.object,
         showValidateIcon: PropTypes.bool,
-        extraTextPosition: PropTypes.oneOf(strings.EXTRA_POS),
+        stopValidateWithError: PropTypes.bool,
+        id: PropTypes.string,
+        wrapperCol: PropTypes.object, // Control wrapperCol {span: number, offset: number} for all field child nodes
+        trigger: PropTypes.oneOfType([
+            PropTypes.oneOf(['blur', 'change', 'custom', 'mount']),
+            PropTypes.arrayOf(PropTypes.oneOf(['blur', 'change', 'custom', 'mount'])),
+        ])
     };
 
     static defaultProps = {
@@ -114,12 +121,12 @@ class Form extends BaseComponent<BaseFormProps, BaseFormState> {
     static Label = Label;
     static Section = Section;
 
-    formApi: FormApi;
+    formApi: FormApi<Values>;
 
-    constructor(props: BaseFormProps) {
+    constructor(props: BaseFormProps<Values>) {
         super(props);
         this.state = {
-            formId: getUuidv4(),
+            formId: '',
         };
         warning(
             Boolean(props.component && props.render),
@@ -142,33 +149,40 @@ class Form extends BaseComponent<BaseFormProps, BaseFormState> {
         }
     }
 
-    componentWillUnmount() {
-        this.foundation.destroy();
-        this.foundation = null;
-        this.formApi = null;
+    componentDidMount() {
+        this.foundation.init();
     }
 
-    get adapter(): BaseFormAdapter<BaseFormProps, BaseFormState> {
+    componentWillUnmount() {
+        this.foundation.destroy();
+    }
+
+    get adapter(): BaseFormAdapter<BaseFormProps<Values>, BaseFormState, Values> {
         return {
             ...super.adapter,
             cloneDeep,
-            notifySubmit: (values: any) => {
-                this.props.onSubmit(values);
+            notifySubmit: (values: Values, e: any) => {
+                this.props.onSubmit(values, e);
             },
-            notifySubmitFail: (errors: ErrorMsg, values: any) => {
-                this.props.onSubmitFail(errors, values);
+            notifySubmitFail: (errors, values, e: any) => {
+                this.props.onSubmitFail(errors, values, e);
             },
-            forceUpdate: () => {
-                this.forceUpdate();
+            forceUpdate: (callback?: () => void) => {
+                this.forceUpdate(callback);
             },
             notifyChange: (formState: FormState) => {
                 this.props.onChange(formState);
             },
-            notifyValueChange: (values: any, changedValues: any) => {
+            notifyValueChange: (values: Values, changedValues: Partial<Values>) => {
                 this.props.onValueChange(values, changedValues);
             },
             notifyReset: () => {
                 this.props.onReset();
+            },
+            initFormId: () => {
+                this.setState({
+                    formId: getUuidv4()
+                });
             },
             getInitValues: () => this.props.initValues,
             getFormProps: (keys: undefined | string | Array<string>) => {
@@ -186,8 +200,10 @@ class Form extends BaseComponent<BaseFormProps, BaseFormState> {
             },
             getAllErrorDOM: () => {
                 const { formId } = this.state;
+                const { id } = this.props;
+                const xId = id ? id : formId;
                 return document.querySelectorAll(
-                    `form[x-form-id="${formId}"] .${cssClasses.PREFIX}-field-error-message`
+                    `form[x-form-id="${xId}"] .${cssClasses.PREFIX}-field-error-message`
                 );
             },
             getFieldDOM: (field: string) =>
@@ -204,7 +220,7 @@ class Form extends BaseComponent<BaseFormProps, BaseFormState> {
             values: formState.values,
         };
         if (component) {
-            return React.createElement(component, props, children);
+            return React.createElement(component, props);
         }
         if (render) {
             return render(props);
@@ -217,7 +233,7 @@ class Form extends BaseComponent<BaseFormProps, BaseFormState> {
 
     submit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        this.foundation.submit();
+        this.foundation.submit(e);
     }
 
     reset(e: React.FormEvent<HTMLFormElement>) {
@@ -252,7 +268,10 @@ class Form extends BaseComponent<BaseFormProps, BaseFormState> {
             allowEmpty,
             autoScrollToError,
             showValidateIcon,
+            stopValidateWithError,
             extraTextPosition,
+            id,
+            trigger,
             ...rest
         } = this.props;
 
@@ -260,7 +279,7 @@ class Form extends BaseComponent<BaseFormProps, BaseFormState> {
             [prefix + '-vertical']: layout === 'vertical',
             [prefix + '-horizontal']: layout === 'horizontal',
         });
-        const showldAppendRow = wrapperCol && labelCol;
+        const shouldAppendRow = wrapperCol && labelCol;
 
         const formContent = (
             <form
@@ -269,7 +288,7 @@ class Form extends BaseComponent<BaseFormProps, BaseFormState> {
                 onReset={this.reset}
                 onSubmit={this.submit}
                 className={formCls}
-                x-form-id={formId}
+                x-form-id={id ? id : formId}
             >
                 {this.content}
             </form>
@@ -279,7 +298,7 @@ class Form extends BaseComponent<BaseFormProps, BaseFormState> {
             <FormUpdaterContext.Provider value={updaterApi}>
                 <FormApiContext.Provider value={this.formApi}>
                     <FormStateContext.Provider value={formState}>
-                        {showldAppendRow ? withRowForm : formContent}
+                        {shouldAppendRow ? withRowForm : formContent}
                     </FormStateContext.Provider>
                 </FormApiContext.Provider>
             </FormUpdaterContext.Provider>

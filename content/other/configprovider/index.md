@@ -1,8 +1,8 @@
 ---
 localeCode: zh-CN
-order: 67
+order: 75
 category: 其他
-title:  Configprovider 全局配置
+title:  ConfigProvider 全局配置
 icon: doc-configprovider
 dir: column
 brief: 为组件提供统一的全局化配置。
@@ -74,7 +74,7 @@ function Demo(props = {}) {
 特殊组件：
 - Modal，Notification，Toast 的命令式调用需要通过 prop 传 `direction`。
 - 如果你想对有方向性的 Icon 做 RTL 国际化，需要自己单独进行处理。我们认为对 Icon 进行 RTL 会让它变得难以理解和维护。其他组件内的 icon Semi 已经做了 RTL 适配。
-- Table 的固定列或表头，树形数据，虚拟化表格暂不支持 RTL，Slider 暂不支持 RTL
+- Table 的树形数据暂不支持 RTL（[Chrome、Safari 浏览器表现与 Firefox 表现不同](https://codesandbox.io/s/table-rtl-treedata-uy7gzl?file=/src/App.jsx)），固定列在 v2.32 版本支持 RTL，Slider 暂不支持 RTL。
 
 
 ```jsx live=true dir="column" hideInDSM
@@ -85,17 +85,17 @@ import { IconVigoLogo, IconEdit, IconCamera, IconList, IconSidebar, IconChevronD
 function Demo(props = {}) {
     const { Option } = Select;
     const [direction, setDirection] = useState();
-    const flexStyle = {display: 'flex', marginBottom: 32, flexWrap: 'wrap'};
-    const titleStyle = {margin: '50px 0 16px 0'};
-    const rowStyle = {margin: '16px 10px'};
+    const flexStyle = { display: 'flex', marginBottom: 32, flexWrap: 'wrap' };
+    const titleStyle = { margin: '50px 0 16px 0' };
+    const rowStyle = { margin: '16px 10px' };
     const badgeStyle = {
         width: '42px',
         height: '42px',
         borderRadius: '4px',
         display: 'inline-block',
     };
-    const tagStyle = {marginRight: 8, marginBottom: 8};
-    const buttonStyle = {...tagStyle};
+    const tagStyle = { marginRight: 8, marginBottom: 8 };
+    const buttonStyle = { ...tagStyle };
     const opts = {
         title: 'Hi,Bytedance',
         content: 'ies dance dance dance',
@@ -177,30 +177,30 @@ function Demo(props = {}) {
                         <br/><br/>
                         <Input prefix="Prefix" showClear></Input>
                         <br/><br/>
-                        <Input suffix={<Typography.Text strong type='secondary' style={{margin: '0 8px'}}>Suffix</Typography.Text>} showClear></Input>
+                        <Input suffix={<Typography.Text strong type='secondary' style={{ margin: '0 8px' }}>Suffix</Typography.Text>} showClear></Input>
                         <br/><br/>
                         <TextArea placeholder="文本框" maxCount={100} />
                         <br/><br/>
                         <div style={flexStyle}>
-                            <Switch style={{marginRight: 8}} defaultChecked={true}></Switch>
-                            <Switch style={{marginRight: 8}}></Switch>
-                            <Switch disabled defaultChecked={true} style={{marginRight: 8}}></Switch>
+                            <Switch style={{ marginRight: 8 }} defaultChecked={true}></Switch>
+                            <Switch style={{ marginRight: 8 }}></Switch>
+                            <Switch disabled defaultChecked={true} style={{ marginRight: 8 }}></Switch>
                         </div>
                         <div style={flexStyle}>
-                            <Checkbox style={{marginRight: 8}} defaultChecked>多选框</Checkbox>
-                            <Checkbox style={{marginRight: 8}} disabled defaultChecked>禁用的多选框</Checkbox>
-                            <Checkbox style={{marginRight: 8}}>禁用的多选框</Checkbox>
+                            <Checkbox style={{ marginRight: 8 }} defaultChecked>多选框</Checkbox>
+                            <Checkbox style={{ marginRight: 8 }} disabled defaultChecked>禁用的多选框</Checkbox>
+                            <Checkbox style={{ marginRight: 8 }}>禁用的多选框</Checkbox>
                         </div>
-                        <div style={{...flexStyle, marginBottom: 0}}>
-                            <Radio style={{marginRight: 8}} defaultChecked>单选框</Radio>
-                            <Radio style={{marginRight: 8}} disabled defaultChecked>禁用的单选框</Radio>
-                            <Radio style={{marginRight: 8}}>禁用的单选框</Radio>
+                        <div style={{ ...flexStyle, marginBottom: 0 }}>
+                            <Radio style={{ marginRight: 8 }} defaultChecked>单选框</Radio>
+                            <Radio style={{ marginRight: 8 }} disabled defaultChecked>禁用的单选框</Radio>
+                            <Radio style={{ marginRight: 8 }}>禁用的单选框</Radio>
                         </div>
                     </Col>
                     <Col span={12}>
-                        <DatePicker onChange={(date, dateString) => console.log(dateString)} style={{width: '100%'}}/>
+                        <DatePicker onChange={(date, dateString) => console.log(dateString)} style={{ width: '100%' }}/>
                         <br/><br/>
-                        <TimePicker style={{width: '100%'}} />
+                        <TimePicker style={{ width: '100%' }} />
                         <br/><br/>
                         <Select style={{ width: '100%' }} placeholder="选择器-单选">
                             <Option value='abc'>抖音</Option>
@@ -316,12 +316,12 @@ function Demo(props = {}) {
                         <Tag color='white' style={tagStyle}> white tag </Tag>
                     </div>
                     <br/>
-                    <div style={{display: 'flex', alignItems: 'center'}}>
-                        <Popover content={'hi semi-design'} style={{padding: 8}}><Tag style={{marginRight: 8}}>I am Popover</Tag></Popover>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <Popover content={'hi semi-design'} style={{ padding: 8 }}><Tag style={{ marginRight: 8 }}>I am Popover</Tag></Popover>
                         <Tooltip content={'hi semi-design'}>
-                            <Tag style={{marginRight: 8}}>I am Tooltip</Tag>
+                            <Tag style={{ marginRight: 8 }}>I am Tooltip</Tag>
                         </Tooltip>
-                        <Rating defaultValue={3} size='small' style={{marginRight: 8}} />
+                        <Rating defaultValue={3} size='small' style={{ marginRight: 8 }} />
                     </div>
                     <br/>
                     <Timeline>
@@ -348,7 +348,7 @@ function Demo(props = {}) {
                         style={buttonStyle}
                         ghost={false}
                         icon={<IconVigoLogo />}
-                        onClick={() => Notification.info({ ...opts, icon: <IconVigoLogo style={{color: 'pink'}} /> })}
+                        onClick={() => Notification.info({ ...opts, icon: <IconVigoLogo style={{ color: 'pink' }} /> })}
                     />
                     <br/>
                     <Button type='primary' onClick={() => Modal.success(opts)} style={buttonStyle}>成功信息的弹窗</Button>
@@ -381,12 +381,12 @@ function Demo(props = {}) {
 
 ## API 参考
 
-| 属性     | 说明                                                                                | 类型           | 默认值 |
-| -------- | ----------------------------------------------------------------------------------- | -------------- | ------ |
-| direction | 设置文本的方向 | `ltr`\| `rtl` | `ltr` | 
-| getPopupContainer | 指定父级 DOM，弹层将会渲染至该 DOM 中，自定义需要设置 `position: relative` | function():HTMLElement | () => document.body  | 
-| locale   | 多语言配置，同`LocaleProvider`中`locale`参数的[用法](/zh-CN/other/locale#使用) | object         |        |
-| timeZone | [时区标识](#时区标识)                                                               | string\|number |        |
+| 属性              | 说明                                                              | 类型                   | 默认值              |
+|-------------------|-----------------------------------------------------------------|------------------------|---------------------|
+| direction         | 设置文本的方向                                                         | `ltr`\| `rtl`          | `ltr`               |
+| getPopupContainer | 指定父级 DOM，弹层将会渲染至该 DOM 中，自定义需要设置 `position: relative` 这会改变浮层 DOM 树位置，但不会改变视图渲染位置。            | function():HTMLElement | () => document.body |
+| locale            | 多语言配置，同`LocaleProvider`中`locale`参数的[用法](/zh-CN/other/locale#使用) | object                 |                     |
+| timeZone          | [时区标识](#时区标识)                                                   | string\|number         |                     |
 
 
 ### 时区标识
@@ -411,7 +411,7 @@ function Demo(props = {}) {
 
 ```diff
 # webpack配置示例
-const SemiWebpackPlugin = require('@douyinfe/semi-webpack-plugin');
+const SemiWebpackPlugin = require('@douyinfe/semi-webpack-plugin').default;
 module.exports = {
 +    plugins: [new SemiWebpackPlugin({ prefixCls: 'imes' })],
 }

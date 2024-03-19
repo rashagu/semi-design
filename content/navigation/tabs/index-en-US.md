@@ -1,6 +1,6 @@
 ---
 localeCode: en-US
-order: 39
+order: 43
 category: Navigation
 title: Tabs
 subTitle: Tabs
@@ -18,9 +18,17 @@ import { Tabs, TabPane } from '@douyinfe/semi-ui';
 
 ### Basic Usage
 
-Tbs supports three types of styles: `line`, `button`, and `card`. By default, the first tab is selected. You could use either `tabList` to pass in an array of tabs objects, or use `<TabPane>` to create each tab. Mixed usage of two ways is not recommended and data in `tabList` will be rendered with priority.
+Tbs supports three types of styles: `line`, `button`, and `card`. By default, the first tab is selected.
 
-> When you use `tabList`, only the current active tab will be rendered. For `<TabPane>`, all tabs will be rendered in DOM tree by default. You could set `keepDOM={false}` to only render current panel. No animation will be displayed in this case.
+Tabs supports two declare ways, and the rendering process of the two is different:
+- Pass the array of objects through `tabList`, when using `tabList`, only render the currently passed node each time
+- Or use `<TabPane>` to explicitly pass in item by item. When using `<TabPane>`, all panels will be rendered by default. You can set `keepDOM={false}` to only render the current panel, and there will be no animation effect at this time .
+
+<Notice title='Notice'>
+    1. When tabList and TabPane Children are used at the same time, the data passed in through tabList will be rendered first. It is not recommended to configure both <br/>
+    2. When using TabPane Children, TabPane must be a direct child element of Tabs, otherwise Tabs will not be able to correctly collect related attributes such as itemKey and other subcomponents
+</Notice>
+
 
 ```jsx live=true
 import React from 'react';
@@ -67,7 +75,7 @@ class App extends React.Component {
                                 padding: '20px',
                                 border: 'none',
                                 whiteSpace: 'normal',
-                                borderRadius: '6px',
+                                borderRadius: 'var(--semi-border-radius-medium)',
                                 color: 'var(--semi-color-text-1)',
                                 backgroundColor: 'var(--semi-color-fill-0)',
                             }}
@@ -241,8 +249,10 @@ class App extends React.Component {
                 <RadioGroup
                     onChange={e => this.onSelect(e)}
                     value={this.state.type}
+                    type='button'
                     style={{
                         display: 'flex',
+                        width: 200,
                         justifyContent: 'center',
                     }}
                 >
@@ -308,7 +318,7 @@ class App extends React.Component {
             <Tabs style={{ width: '60%', margin: '20px' }} type="card" collapsible>
                 {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((item, index) => (
                     <TabPane tab={`Tab-${item}`} itemKey={`Tab-${item}`} key={item}>
-                        Content of card tab {i}
+                        Content of card tab {index}
                     </TabPane>
                 ))}
             </Tabs>
@@ -499,17 +509,17 @@ class App extends React.Component {
         super(props);
         this.state = {
             tabList: [
-                {tab: 'Doc', itemKey:'1', text:'Doc', closable:true},
-                {tab: 'Quick Start', itemKey:'2', text:'Quick Start', closable:true},
-                {tab: 'Help', itemKey:'3', text:'Help'},
+                { tab: 'Doc', itemKey: '1', text: 'Doc', closable: true },
+                { tab: 'Quick Start', itemKey: '2', text: 'Quick Start', closable: true },
+                { tab: 'Help', itemKey: '3', text: 'Help' },
             ]
-        }
+        };
     }
     close(key){
         const newTabList = [...this.state.tabList];
         const closeIndex = newTabList.findIndex(t=>t.itemKey===key);
         newTabList.splice(closeIndex, 1);
-        this.setState({tabList:newTabList});
+        this.setState({ tabList: newTabList });
     }
     render() {
         return (
@@ -537,12 +547,13 @@ defaultActiveKey | Initialize the key value of the selected tab page | string | 
 keepDOM | Whether to render the DOM structure of the hidden panel when using TabPane writing, **>=1.0.0** | boolean | true |
 lazyRender | Lazy rendering, only when the panel is activated will it be rendered in the DOM tree, **>=1.0.0** | boolean | false |
 renderTabBar | Used for secondary packaging tab bar | (tabBarProps: object, defaultTabBar: React.ComponentType) => ReactNode | None |
+preventScroll | Indicates whether the browser should scroll the document to display the newly focused element, acting on the focus method inside the component, excluding the component passed in by the user | boolean |  |  |
 size | Size, providing three types of `large`, `medium`, and `small`, **>=1.11.0, currently only supports linear Tabs** | string | `large` |
 style | style object | CSSProperties | None |
 tabBarExtraContent | Used to extend the content of the tab bar | ReactNode | None |
 tabList | An array of tab page objects that supports itemKey (corresponding to activeKey, tab (tab page text) and icon (tab page icon) | TabPane[] | None |
 tabPaneMotion | Whether to use animation to switch tabs | boolean | true |
-tabPosition | The position of the tab, support `top` (horizontal), `left` (vertical), **>=1.0.0** | boolean | `top` |
+tabPosition | The position of the tab, support `top` (horizontal), `left` (vertical), **>=1.0.0** | string | `top` |
 type | The style of the label bar, optional `line`, `card`, `button` | string | `line` |
 onChange | Callback function when switching tab pages | function(activeKey: string) | None |
 onTabClick | Click event | function(key: string, e: Event) | None |
@@ -560,6 +571,53 @@ style | style object | CSSProperties | None |
 tab | Tab page bar display text | ReactNode | None |
 closable | whether user can close the tab **>=2.1.0** | boolean | false |
 
+
+## Accessibility
+
+### ARIA
+- About role
+  - TabBar has a role of `tablist`
+  - Tab in TabBar has a role of `tab`
+  - TabPane has a role of `tabpanel`
+- aria-orientation: Indicates TabBar's orientation, can be `vertical` or `horizontal`. When tabPosition is `left`,aria-orientation will be `vertical`, when tabPosition is `top`, aria-orientation will be `horizontal`.
+- aria-disabled: When TabPane is disabled, the related Tab's aria-disabled will be set to true.
+- aria-selected: Indicates whether the Tab is selected.
+- aria-controls: Indicates the TabPane controlled by the Tab
+- aria-labelledby: Indicates the element labels the TabPane
+
+### Keyboard and Focus
+WAI-ARIA: https://www.w3.org/WAI/ARIA/apg/patterns/tabpanel/
+- Tabs can be given focus, except for disabled tabs
+- Keyboard users can use the `Tab` key to move the focus to the tab panel of the selected tab element
+- Use `left and right arrows` to toggle options when focus is on a tab element in a horizontal tab list
+- Use `up and down arrows` to toggle options when focus is on a tab element in a vertical tab list
+- When the focus is on an inactive tab element in the tab list, the `Space` or `Enter` keys can be used to activate the tab
+- When keyboard users want to focus directly on the last tab element in the tab list:
+  - Mac users: `fn` + `right arrow`
+  - Windows users: `End`
+- When keyboard users want to focus directly on the first tab element in the tab list:
+  - Mac users: `fn` + `left arrow`
+  - Windows users: `Home`
+- When a tab is allowed to be deleted:
+  - Users can use `Delete` keys to delete tab
+  - After deletion, the focus is transferred to the next element of the deleted tab element; if the deleted element has no subsequent element, it is transferred to the previous element
+
+## Content Guidelines
+- Label copy needs to explain the label content accurately and clearly
+- Use short, easily distinguishable labels
+- try to stay within one word
+
+
 ## Design Token
 
 <DesignToken/>
+
+## FAQ
+
+-   **Why typography with ellipses in Tabs doesn't work?**
+
+    Because when Tabs renders TabPane, the default is to render display: none. At this point these components cannot get the correct width or height values. It is recommended to enable lazyRender in version 1.x, or disable keepDOM. Version 0.x needs to use tabList notation.
+
+-   **Why are the height or width values ​​wrong when using components such as Collapse/Collapsible/Resizable Table in Tabs?**
+
+    The reason is the same as above. In addition, if the collapse does not need animation, you can also turn off the animation effect by setting motion={false}. There is no need to get the height of the component at this point。

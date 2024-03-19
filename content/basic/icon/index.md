@@ -1,6 +1,6 @@
 ---
 localeCode: zh-CN
-order: 10
+order: 14
 category: 基础
 title:  Icon 图标
 icon: doc-icons
@@ -8,6 +8,11 @@ brief: 语义化的矢量图形。
 ---
 
 ## 图标列表
+
+默认的图标集 `@douyinfe/semi-icons` 包含面性、线性两套图标，默认不带颜色，可通过 css color属性更改颜色。
+
+`@douyinfe/semi-icons-lab` 为彩色图标集，需单独安装，不可改色, lab 图标集于 v2.48 后提供
+
 ```icon
 ```
 
@@ -17,6 +22,7 @@ brief: 语义化的矢量图形。
 
 ```jsx import
 import Icon, { IconHome } from '@douyinfe/semi-icons';
+import { IconAvatar, IconCard } from '@douyinfe/semi-icons-lab';
 ```
 
 ### 基础使用
@@ -53,7 +59,7 @@ import { IconHome, IconEmoji, IconSpin } from '@douyinfe/semi-icons';
 可以改变`font-size`来更改图标大小
 >
 
-Icon组件封装了size属性，可以更方便地定义图标尺寸，支持 `extra-small` (8x8)，`small` (12x12)， `default` (16x16)， `large` (20x20)， `extra-large` (24x24)。
+Icon组件封装了size属性，可以更方便地定义图标尺寸，支持 `extra-small` (8x8)，`small` (12x12)， `default` (16x16)， `large` (20x20)， `extra-large` (24x24)，当size指定为`inherit`时，图标大小继承当前上下文字体大小
 
 
 ```jsx live=true
@@ -65,7 +71,7 @@ import { IconSearch, IconHelpCircle, IconAlertCircle, IconMinusCircle, IconPlusC
     const types = [<IconSearch />, <IconHelpCircle />, <IconAlertCircle />, <IconMinusCircle />, <IconPlusCircle />, <IconPlus />, <IconRefresh />];
     const sizes = ['extra-small', 'small', 'default', 'large', 'extra-large'];
     let icons = types.map((type, i) => {
-        return <div key={i} style={{ marginBottom: 4 }}>{sizes.map(size => React.cloneElement(type, {size, key:size}))}</div>;
+        return <div key={i} style={{ marginBottom: 4 }}>{sizes.map(size => React.cloneElement(type, { size, key: size }))}</div>;
     });
     return icons;
 };
@@ -81,14 +87,14 @@ import { IconLikeHeart, IconFlag, IconLock, IconUnlock } from '@douyinfe/semi-ic
 
 () => (
     <div>
-        <div style={{color:'#E91E63'}} >
+        <div style={{ color: '#E91E63' }} >
             <IconLikeHeart size="extra-large"/>
             <IconFlag size="extra-large"/>
         </div>
         <br/>
         <div>
-            <IconLock style={{color:'#6A3AC7'}} size="extra-large" />
-            <IconUnlock style={{color:'#9C27B0'}} size="extra-large"/>
+            <IconLock style={{ color: '#6A3AC7' }} size="extra-large" />
+            <IconUnlock style={{ color: '#9C27B0' }} size="extra-large"/>
         </div>
     </div>
 );
@@ -96,15 +102,15 @@ import { IconLikeHeart, IconFlag, IconLock, IconUnlock } from '@douyinfe/semi-ic
 
 ### 自定义图标
 可以使用自定义图标传入Icon组件
-Icon组件支持size、rotate、spining等属性
+Icon组件支持size、rotate、spin等属性
 
 ```jsx live=true
 import React from 'react';
 import { Icon } from '@douyinfe/semi-ui';
 
 () => {
-    function CustomIcon(){
-        return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    function CustomIcon() {
+        return <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="12" cy="12" r="11" fill="#FBCD2C"/>
             <mask id="mask0" maskType="alpha" maskUnits="userSpaceOnUse" x="1" y="1" width="22" height="22">
                 <circle cx="12" cy="12" r="11" fill="#A2845E"/>
@@ -155,7 +161,23 @@ import StarIcon from './star.svg';
 | onMouseMove | 移动鼠标的回调事件 >=v1.21 | (e: Event) => void | 无    |
 | onMouseUp | 鼠标按钮抬起的回调事件 >=v1.21 | (e: Event) => void | 无    |
 | rotate | 旋转度数 | number |   |
-| size | 尺寸，支持`extra-small`，`small`， `default`， `large`， `extra-large` | string | `default`  |
+| size | 尺寸，支持`inherit`，`extra-small`，`small`， `default`， `large`， `extra-large` | string | `default`  |
 | spin | 旋转动画 | boolean |   |
 | style | 图标样式 | CSSProperties | 无    |
 | svg | 图标内容 | ReactNode | 无    |
+
+
+## Accessibility
+
+### ARIA
+
+- Icon 组件 role 为 img，它的 aria-label 默认为组件的文件名。例如 IconHome 的 aria-label 为 `home`，如果你有更好的语义化名字，可以通过 aria-label 传入。
+
+```jsx live=true
+import React from 'react';
+import { IconHome } from '@douyinfe/semi-icons';
+
+() => <IconHome aria-label="back to homepage" />;
+```
+
+- Icon 内部的 svg 元素为装饰元素，默认设置了 aria-hidden 以不被屏幕阅读器阅读

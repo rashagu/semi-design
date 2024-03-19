@@ -14,13 +14,13 @@ body, body[theme-mode="dark"] .semi-always-light {
     --semi-color-primary-light-hover: rgba(var(--semi-blue-1), 1); // 浅版主要颜色悬浮态
     --semi-color-primary-light-active: rgba(var(--semi-blue-2), 1); // 浅版主要颜色激活态
 
-    --semi-color-secondary: rgba(var(--semi-blue-5), 1); // 次要颜色。强调作用次于主要颜色，但仍然具有强调作用。
-    --semi-color-secondary-hover: rgba(var(--semi-blue-6), 1); // 次要颜色悬浮态
-    --semi-color-secondary-active: rgba(var(--semi-blue-7), 1); // 次要颜色激活态
-    --semi-color-secondary-disabled: rgba(var(--semi-blue-2), 1); // 次要颜色禁用态
-    --semi-color-secondary-light-default: rgba(var(--semi-blue-0), 1); // 浅版次要颜色（多用于背景）。强调作用次于主要颜色，但仍然具有强调作用。
-    --semi-color-secondary-light-hover: rgba(var(--semi-blue-1), 1); // 浅版次要颜色悬浮态
-    --semi-color-secondary-light-active: rgba(var(--semi-blue-2), 1); // 浅版次要颜色激活态
+    --semi-color-secondary: rgba(var(--semi-light-blue-5), 1); // 次要颜色。强调作用次于主要颜色，但仍然具有强调作用。
+    --semi-color-secondary-hover: rgba(var(--semi-light-blue-6), 1); // 次要颜色悬浮态
+    --semi-color-secondary-active: rgba(var(--semi-light-blue-7), 1); // 次要颜色激活态
+    --semi-color-secondary-disabled: rgba(var(--semi-light-blue-2), 1); // 次要颜色禁用态
+    --semi-color-secondary-light-default: rgba(var(--semi-light-blue-0), 1); // 浅版次要颜色（多用于背景）。强调作用次于主要颜色，但仍然具有强调作用。
+    --semi-color-secondary-light-hover: rgba(var(--semi-light-blue-1), 1); // 浅版次要颜色悬浮态
+    --semi-color-secondary-light-active: rgba(var(--semi-light-blue-2), 1); // 浅版次要颜色激活态
 
     --semi-color-tertiary: rgba(var(--semi-grey-5), 1); // 第三颜色，可以在页面上多次使用
     --semi-color-tertiary-hover: rgba(var(--semi-grey-6), 1); // 第三颜色悬浮态
@@ -80,7 +80,7 @@ body, body[theme-mode="dark"] .semi-always-light {
     --semi-color-border: rgba(var(--semi-grey-9), .08); // 默认描边颜色
     --semi-color-nav-bg: rgba(var(--semi-white), 1); // 导航背景色
 
-    --semi-overlay-bg: rgba(22, 22, 26, .6); // 蒙层背景色
+    --semi-color-overlay-bg: rgba(22, 22, 26, .6); // 蒙层背景色
 
     --semi-color-fill-0: rgba(var(--semi-grey-8), .05); // 填充色 - 默认态
     --semi-color-fill-1: rgba(var(--semi-grey-8), .09); // 填充色 - 悬浮态
@@ -92,7 +92,7 @@ body, body[theme-mode="dark"] .semi-always-light {
     --semi-color-bg-4: rgba(var(--semi-white), 1); // 背景色 - 最上层（特殊）
     --semi-color-text-0: rgba(var(--semi-grey-9), 1); // 文本/图标颜色 - 最主要
     --semi-color-text-1: rgba(var(--semi-grey-9), .8); // 文本/图标颜色 - 稍次要
-    --semi-color-text-2: rgba(var(--semi-grey-9), .6); // 文本/图标颜色 - 次要
+    --semi-color-text-2: rgba(var(--semi-grey-9), .62); // 文本/图标颜色 - 次要
     --semi-color-text-3: rgba(var(--semi-grey-9), .35); // 文本/图标颜色 - 最次要
     --semi-shadow-elevated: 0 0 1px rgba(0, 0, 0, .3), 0 4px 14px rgba(0, 0, 0, .1); // 用于toast, modal, popover等需要提升层级的界面元素
     --semi-border-radius-extra-small: 3px; // 超小圆角，用于 checkbox 内圆角
@@ -101,6 +101,28 @@ body, body[theme-mode="dark"] .semi-always-light {
     --semi-border-radius-large: 12px; // 大圆角, 用于 modal
     --semi-border-radius-circle: 50%; // 全圆角, 用于 avatar, badge 等组件
     --semi-border-radius-full: 9999px; // 用于创建全尺寸圆角，如胶囊标签等
+    --semi-color-highlight-bg: rgba(var(--semi-yellow-4), 1); // 高亮文本背景色
+    --semi-color-highlight: rgba(var(--semi-black), 1); // 高亮文本色
+    --semi-color-data-0:rgba(22, 100, 255, 1); //vchart 数据色板颜色 - 0
+    --semi-color-data-1:rgba(178, 207, 255, 1); //vchart 数据色板颜色 - 1
+    --semi-color-data-2:rgba(26, 198, 255, 1); //vchart 数据色板颜色 - 2
+    --semi-color-data-3:rgba(148, 239, 255, 1); //vchart 数据色板颜色 - 3
+    --semi-color-data-4:rgba(255, 138, 0, 1); //vchart 数据色板颜色 - 4
+    --semi-color-data-5:rgba(255, 206, 122, 1); //vchart 数据色板颜色 - 5
+    --semi-color-data-6:rgba(60, 199, 128, 1); //vchart 数据色板颜色 - 6
+    --semi-color-data-7:rgba(185, 237, 205, 1); //vchart 数据色板颜色 - 7
+    --semi-color-data-8:rgba(116, 66, 212, 1); //vchart 数据色板颜色 - 8
+    --semi-color-data-9:rgba(221, 197, 250, 1); //vchart 数据色板颜色 - 9
+    --semi-color-data-10:rgba(255, 196, 0, 1); //vchart 数据色板颜色 - 10
+    --semi-color-data-11:rgba(250, 232, 120, 1); //vchart 数据色板颜色 - 11
+    --semi-color-data-12:rgba(48, 77, 119, 1); //vchart 数据色板颜色 - 12
+    --semi-color-data-13:rgba(139, 149, 158, 1); //vchart 数据色板颜色 - 13
+    --semi-color-data-14:rgba(180, 141, 235, 1); //vchart 数据色板颜色 - 14
+    --semi-color-data-15:rgba(239, 227, 255, 1); //vchart 数据色板颜色 - 15
+    --semi-color-data-16:rgba(0, 148, 136, 1); //vchart 数据色板颜色 - 16
+    --semi-color-data-17:rgba(89, 186, 168, 1); //vchart 数据色板颜色 - 17
+    --semi-color-data-18:rgba(255, 125, 218, 1); //vchart 数据色板颜色 - 18
+    --semi-color-data-19:rgba(255, 207, 238, 1); //vchart 数据色板颜色 - 19
 }
 
 body[theme-mode="dark"], body .semi-always-dark {
@@ -115,13 +137,13 @@ body[theme-mode="dark"], body .semi-always-dark {
     --semi-color-primary-light-default: rgba(var(--semi-blue-5), .2);
     --semi-color-primary-light-hover: rgba(var(--semi-blue-5), .3);
     --semi-color-primary-light-active: rgba(var(--semi-blue-5), .4);
-    --semi-color-secondary: rgba(var(--semi-blue-5), 1);
-    --semi-color-secondary-hover: rgba(var(--semi-blue-6), 1);
-    --semi-color-secondary-active: rgba(var(--semi-blue-7), 1);
-    --semi-color-secondary-disabled: rgba(var(--semi-blue-2), 1);
-    --semi-color-secondary-light-default: rgba(var(--semi-blue-5), .2);
-    --semi-color-secondary-light-hover: rgba(var(--semi-blue-5), .3);
-    --semi-color-secondary-light-active: rgba(var(--semi-blue-5), .4);
+    --semi-color-secondary: rgba(var(--semi-light-blue-5), 1);
+    --semi-color-secondary-hover: rgba(var(--semi-light-blue-6), 1);
+    --semi-color-secondary-active: rgba(var(--semi-light-blue-7), 1);
+    --semi-color-secondary-disabled: rgba(var(--semi-light-blue-2), 1);
+    --semi-color-secondary-light-default: rgba(var(--semi-light-blue-5), .2);
+    --semi-color-secondary-light-hover: rgba(var(--semi-light-blue-5), .3);
+    --semi-color-secondary-light-active: rgba(var(--semi-light-blue-5), .4);
     --semi-color-tertiary: rgba(var(--semi-grey-5), 1);
     --semi-color-tertiary-hover: rgba(var(--semi-grey-6), 1);
     --semi-color-tertiary-active: rgba(var(--semi-grey-7), 1);
@@ -168,10 +190,10 @@ body[theme-mode="dark"], body .semi-always-dark {
     --semi-color-link-visited: rgba(var(--semi-blue-5), 1);
     --semi-color-nav-bg: rgba(35, 36, 41, 1);
     --semi-shadow-elevated: inset 0 0 0 1px rgba(255, 255, 255, .1), 0 4px 14px rgba(0, 0, 0, .25);
-    --semi-overlay-bg: rgba(22, 22, 26, .6);
-    --semi-color-fill-0: rgba(var(--semi-white), .05);
-    --semi-color-fill-1: rgba(var(--semi-white), .09);
-    --semi-color-fill-2: rgba(var(--semi-white), .13);
+    --semi-color-overlay-bg: rgba(22, 22, 26, .6);
+    --semi-color-fill-0: rgba(var(--semi-white), .12);
+    --semi-color-fill-1: rgba(var(--semi-white), .16);
+    --semi-color-fill-2: rgba(var(--semi-white), .20);
     --semi-color-border: rgba(var(--semi-white), .08);
     --semi-color-shadow: rgba(var(--semi-black), .04);
     --semi-color-bg-0: rgba(22, 22, 26, 1);
@@ -189,4 +211,26 @@ body[theme-mode="dark"], body .semi-always-dark {
     --semi-border-radius-large: 12px;
     --semi-border-radius-circle: 50%;
     --semi-border-radius-full: 9999px;
+    --semi-color-highlight-bg: rgba(var(--semi-yellow-2), 1); // 高亮文本背景色
+    --semi-color-highlight: rgba(var(--semi-white), 1); // 高亮文本色
+    --semi-color-data-0:rgba(22, 100, 255, 1); //vchart 数据色板颜色 - 0
+    --semi-color-data-1:rgba(178, 207, 255, 1); //vchart 数据色板颜色 - 1
+    --semi-color-data-2:rgba(26, 198, 255, 1); //vchart 数据色板颜色 - 2
+    --semi-color-data-3:rgba(148, 239, 255, 1); //vchart 数据色板颜色 - 3
+    --semi-color-data-4:rgba(255, 138, 0, 1); //vchart 数据色板颜色 - 4
+    --semi-color-data-5:rgba(255, 206, 122, 1); //vchart 数据色板颜色 - 5
+    --semi-color-data-6:rgba(60, 199, 128, 1); //vchart 数据色板颜色 - 6
+    --semi-color-data-7:rgba(185, 237, 205, 1); //vchart 数据色板颜色 - 7
+    --semi-color-data-8:rgba(116, 66, 212, 1); //vchart 数据色板颜色 - 8
+    --semi-color-data-9:rgba(221, 197, 250, 1); //vchart 数据色板颜色 - 9
+    --semi-color-data-10:rgba(255, 196, 0, 1); //vchart 数据色板颜色 - 10
+    --semi-color-data-11:rgba(250, 232, 120, 1); //vchart 数据色板颜色 - 11
+    --semi-color-data-12:rgba(48, 77, 119, 1); //vchart 数据色板颜色 - 12
+    --semi-color-data-13:rgba(139, 149, 158, 1); //vchart 数据色板颜色 - 13
+    --semi-color-data-14:rgba(180, 141, 235, 1); //vchart 数据色板颜色 - 14
+    --semi-color-data-15:rgba(239, 227, 255, 1); //vchart 数据色板颜色 - 15
+    --semi-color-data-16:rgba(0, 148, 136, 1); //vchart 数据色板颜色 - 16
+    --semi-color-data-17:rgba(89, 186, 168, 1); //vchart 数据色板颜色 - 17
+    --semi-color-data-18:rgba(255, 125, 218, 1); //vchart 数据色板颜色 - 18
+    --semi-color-data-19:rgba(255, 207, 238, 1); //vchart 数据色板颜色 - 19
 }

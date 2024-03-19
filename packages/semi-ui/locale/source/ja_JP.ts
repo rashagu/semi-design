@@ -5,11 +5,10 @@ const local: Locale = {
     code: 'ja-JP',
     dateFnsLocale: ja,
     Pagination: {
-        item: '個数',
+        pageSize: '1ページあたりのアイテム数：${pageSize}',
+        total: '合計ページ数：${total}',
+        jumpTo: 'ページへ',
         page: 'ページ',
-        pageSize: '個数 / ページ',
-        total: '合計',
-        jumpTo: 'ページへ'
     },
     Modal: {
         confirm: '確認する',
@@ -34,7 +33,9 @@ const local: Locale = {
             dateTime: '日時を選択してください',
             dateRange: ['開始日', '終了日'],
             dateTimeRange: ['開始日', '終了日'],
+            monthRange: ['開始月', '終了月'],
         },
+        presets: 'クイック選択',
         footer: {
             confirm: '確認する',
             cancel: 'キャンセル',
@@ -84,7 +85,7 @@ const local: Locale = {
             Sun: '日',
         },
         localeFormatToken: {
-            FORMAT_SWITCH_DATE: 'yyyy-MM-dd',
+            FORMAT_SWITCH_DATE: 'yyyy/MM/dd',
         },
     },
     Popconfirm: {
@@ -148,8 +149,24 @@ const local: Locale = {
         clear: '空っぽ',
         selectAll: 'すべて選択',
         clearSelectAll: 'すべてを選択解除',
-        total: '合計 ${total} アイテム',
-        selected: '選択済み ${total} アイテム',
+        total: '合計アイテム数：${total}',
+        selected: '選択されているアイテム数：${total}',
+    },
+    Form: {
+        optional: '(オプション)',
+    },
+    Image: {
+        preview: 'プレビュー',
+        loading: '読み込み中',
+        loadError: '読み込みに失敗しました',
+        prevTip: '前へ',
+        nextTip: '次へ',
+        zoomInTip: 'ズームイン',
+        zoomOutTip: 'ズームアウト',
+        rotateTip: '回転',
+        downloadTip: 'ダウンロード',
+        adaptiveTip: 'ページに適応',
+        originTip: '元のサイズ',
     },
 };
 

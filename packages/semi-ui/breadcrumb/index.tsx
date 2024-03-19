@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import React from 'react';
 import cls from 'classnames';
 import propTypes from 'prop-types';
@@ -11,17 +10,17 @@ import { noop } from '@douyinfe/semi-foundation/utils/function';
 import BaseComponent, { BaseProps } from '../_base/baseComponent';
 import Popover from '../popover';
 import BreadcrumbItem, { RouteProps, BreadcrumbItemInfo } from './item';
-import BreadContext, { BreadContextProps } from './bread-context';
+import BreadContext, { BreadContextType } from './bread-context';
 import { TooltipProps } from '../tooltip';
 import { IconMore } from '@douyinfe/semi-icons';
 
 const clsPrefix = cssClasses.PREFIX;
 
-export { RouteProps, BreadcrumbItemProps, BreadcrumbItemInfo } from './item';
+export type { RouteProps, BreadcrumbItemProps, BreadcrumbItemInfo } from './item';
 export interface showToolTipProps {
     width?: string | number;
     ellipsisPos?: 'end' | 'middle';
-    opts?: TooltipProps;
+    opts?: TooltipProps
 }
 
 export type MoreType = 'default' | 'popover';
@@ -41,14 +40,15 @@ export interface BreadcrumbProps extends BaseProps {
     renderMore?: (restItem: Array<React.ReactNode>) => React.ReactNode;
     /* Style type for ellipsis area */
     moreType?: MoreType;
+    'aria-label'?: React.AriaAttributes['aria-label']
 }
 
 interface BreadcrumbState {
-    isCollapsed: boolean;
+    isCollapsed: boolean
 }
 
 class Breadcrumb extends BaseComponent<BreadcrumbProps, BreadcrumbState> {
-    static contextType: React.Context<BreadContextProps> = BreadContext;
+    static contextType: React.Context<BreadContextType> = BreadContext;
 
     static Item: typeof BreadcrumbItem = BreadcrumbItem;
 
@@ -77,6 +77,7 @@ class Breadcrumb extends BaseComponent<BreadcrumbProps, BreadcrumbState> {
 
         /* Type of ellipsis area */
         moreType: propTypes.oneOf(strings.MORE_TYPE),
+        'aria-label': propTypes.string,
     };
     static defaultProps = {
         routes: [] as [],
@@ -91,6 +92,7 @@ class Breadcrumb extends BaseComponent<BreadcrumbProps, BreadcrumbState> {
         autoCollapse: true,
         moreType: 'default',
         maxItemCount: 4,
+        'aria-label': 'Breadcrumb'
     };
 
     constructor(props: BreadcrumbProps) {
@@ -159,19 +161,25 @@ class Breadcrumb extends BaseComponent<BreadcrumbProps, BreadcrumbState> {
     handleCollapse = (template: Array<React.ReactNode>, itemsLen: number) => {
         const { maxItemCount, renderMore, moreType } = this.props;
         const hasRenderMore = isFunction(renderMore);
-        const restItem = template.slice(1, itemsLen - 3);
+        const restItem = template.slice(1, itemsLen - maxItemCount + 1);
         const spread = (
             <span className={`${clsPrefix}-collapse`} key={`more-${itemsLen}`}>
                 <span className={`${clsPrefix}-item-wrap`}>
                     <span
+                        role="button"
+                        tabIndex={0}
+                        aria-label="Expand breadcrumb items"
                         className={`${clsPrefix}-item ${clsPrefix}-item-more`}
                         onClick={item => this.foundation.handleExpand(item)}
+                        onKeyPress={e => this.foundation.handleExpandEnterPress(e)}
                     >
                         {hasRenderMore && renderMore(restItem)}
                         {!hasRenderMore && moreType === 'default' && <IconMore />}
                         {!hasRenderMore && moreType === 'popover' && this.renderPopoverMore(restItem)}
                     </span>
-                    <span className={`${clsPrefix}-separator`}>{this.props.separator}</span>
+                    <span className={`${clsPrefix}-separator`} x-semi-prop="separator">
+                        {this.props.separator}
+                    </span>
                 </span>
             </span>
         );
@@ -193,7 +201,6 @@ class Breadcrumb extends BaseComponent<BreadcrumbProps, BreadcrumbState> {
                         key={key}
                         active={idx === items.length - 1}
                         route={route._origin}
-                        // eslint-disable-next-line max-len
                         shouldRenderSeparator={!(shouldCollapse && (hasRenderMore || moreTypeIsPopover) && inCollapseArea)}
                     >
                         {renderItem ? renderItem(route._origin) : route.name}
@@ -282,7 +289,7 @@ class Breadcrumb extends BaseComponent<BreadcrumbProps, BreadcrumbState> {
                     separator,
                 }}
             >
-                <nav aria-label={`${clsPrefix}`} className={sizeCls} style={style}>
+                <nav aria-label={this.props['aria-label']} className={sizeCls} style={style} {...this.getDataAttr(this.props)}>
                     {breadcrumbs}
                 </nav>
             </BreadContext.Provider>

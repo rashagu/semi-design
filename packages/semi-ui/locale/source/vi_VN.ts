@@ -5,11 +5,10 @@ const local: Locale = {
     code: 'vi-VN',
     dateFnsLocale: vi,
     Pagination: {
-        item: 'Con số',
-        pageSize: ' Số / trang',
+        pageSize: 'Số mục mỗi trang: ${pageSize}',
+        total: 'Tổng số trang: ${total}',
+        jumpTo: 'Chuyển đến',
         page: ' Số trang',
-        total: 'Tổng cộng',
-        jumpTo: 'Chuyển đến'
     },
     Modal: {
         confirm: 'Xác nhận',
@@ -37,7 +36,9 @@ const local: Locale = {
             dateTime: 'Chọn ngày và giờ',
             dateRange: ['Ngày bắt đầu', 'Ngày kết thúc'],
             dateTimeRange: ['Ngày bắt đầu', 'Ngày kết thúc'],
+            monthRange: ['Tháng bắt đầu', 'Tháng kết thúc'],
         },
+        presets: 'Lựa chọn nhanh',
         footer: {
             confirm: 'Xác nhận',
             cancel: 'Huỷ bỏ',
@@ -86,7 +87,7 @@ const local: Locale = {
             Sun: 'chủ nhật',
         },
         localeFormatToken: {
-            FORMAT_SWITCH_DATE: 'yyyy-MM-dd',
+            FORMAT_SWITCH_DATE: 'dd/MM/yyyy',
         },
     },
     Popconfirm: {
@@ -99,7 +100,7 @@ const local: Locale = {
     },
     Table: {
         emptyText: 'Không kết quả',
-        pageText: 'Hiển thị $ {currentStart} đến $ {currentEnd} trong tổng số $ {total}}',
+        pageText: 'Hiển thị ${currentStart} đến ${currentEnd} trong tổng số ${total}}',
     },
     Select: {
         emptyText: 'Không kết quả',
@@ -150,8 +151,24 @@ const local: Locale = {
         clear: 'Clear',
         selectAll: 'Thông thoáng',
         clearSelectAll: 'Bỏ chọn tất cả',
-        total: 'Tổng số ${total} mặt hàng',
-        selected: '${total} mục được chọn',
+        total: 'Tổng số mục: ${total}',
+        selected: 'Số mục đã chọn: ${total}',
+    },
+    Form: {
+        optional: '(không bắt buộc)',
+    },
+    Image: {
+        preview: 'xem trước',
+        loading: 'Đang tải',
+        loadError: 'Không tải được',
+        prevTip: 'Trước đó',
+        nextTip: 'Next',
+        zoomInTip: 'Phóng to',
+        zoomOutTip: 'thu nhỏ',
+        rotateTip: 'Xoay',
+        downloadTip: 'download',
+        adaptiveTip: 'Thích ứng với trang',
+        originTip: 'Kích thước ban đầu',
     },
 };
 

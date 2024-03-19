@@ -1,17 +1,13 @@
 ---
 localeCode: zh-CN
-order: 50
+order: 57
 category: 展示类
 title: List 列表
 icon: doc-list
 dir: column
 noInline: true
-brief: 基础列表组件。
+brief: 基础列表组件
 ---
-
-## 使用场景
-
-最基础的列表展示，可展现文字、列表、图片、段落等，常用于后台数据展示页面。
 
 ## 代码演示
 
@@ -923,83 +919,6 @@ class DraggableList extends React.Component {
 render(DraggableList);
 ```
 
-如果你使用 [react-sortable-hoc](https://github.com/clauderic/react-sortable-hoc)，这里也有一个例子
-
-```jsx live=true dir="column" hideInDSM
-import React, { useState } from 'react';
-import { List } from '@douyinfe/semi-ui';
-import { IconHandle } from '@douyinfe/semi-icons';
-import { SortableContainer, SortableElement, sortableHandle } from 'react-sortable-hoc';
-
-
-() => {
-    const data = [
-        '围城',
-        '平凡的世界（全三册）',
-        '三体（全集）',
-        '雪中悍刀行（全集）',
-        '撒哈拉的故事',
-        '明朝那些事',
-        '一禅小和尚',
-        '沙丘',
-        '被讨厌的勇气',
-        '罪与罚',
-        '月亮与六便士',
-        '沉默的大多数',
-        '第一人称单数',
-    ];
-
-    const [list, setList] = useState(data.slice(0, 6));
-
-    const renderItem = (props) => {
-        const { item } = props;
-        const DragHandle = sortableHandle(() => <IconHandle className={`list-item-drag-handler`} style={{ marginRight: 4 }} />);
-        return (
-            <List.Item className='component-list-demo-drag-item list-item'>
-                <DragHandle />
-                {item}
-            </List.Item>
-        );
-    };
-
-    const arrayMove = (array, from, to) => {
-        let newArray = array.slice();
-        newArray.splice(to < 0 ? newArray.length + to : to, 0, newArray.splice(from, 1)[0]);
-        return newArray;
-    };
-
-    const onSortEnd = (callbackProps) => {
-        let { oldIndex, newIndex } = callbackProps;
-        let newList = arrayMove(list, oldIndex, newIndex);
-        setList(newList);
-    };
-    
-    const SortableItem = SortableElement(props => renderItem(props));
-    const SortableList = SortableContainer(
-        ({ items }) => {
-            return (
-                <div className="sortable-list-main">
-                    {items.map((item, index) => (
-                        <SortableItem key={item} index={index} item={item}></SortableItem>
-                    ))}
-                </div>
-            );
-        },
-        { distance: 10 }
-    );
-
-    return (
-        <div>
-            <div style={{ marginRight: 16, width: 280, display: 'flex', flexWrap: 'wrap', border: '1px solid var(--semi-color-border)' }}>
-                <List style={{ width: '100%' }} className='component-list-demo-booklist'>
-                    <SortableList useDragHandle onSortEnd={onSortEnd} items={list}></SortableList>
-                </List>
-            </div>
-
-        </div>
-    );
-};
-```
 
 ### 带分页器 
 
@@ -1163,7 +1082,7 @@ import { IconMinusCircle, IconPlusCircle } from '@douyinfe/semi-icons';
                         </div>
                     }
                 />
-                <div style={{ margin: 4, fontSize: 14  }} onClick={() => updateList()}>
+                <div style={{ margin: 4, fontSize: 14 }} onClick={() => updateList()}>
                     <Button theme='borderless' icon={<IconPlusCircle />} style={{ marginRight: 4, color: 'var(--semi-color-info)' }}>
                     </Button>
                     新增书籍
@@ -1201,7 +1120,7 @@ import { List, Input, Button, Checkbox, Radio, RadioGroup, CheckboxGroup } from 
     ];
 
     const [page, onPageChange] = useState(1);
-    const [checkboxVal, setCV] = useState(data[0]);
+    const [checkboxVal, setCV] = useState([...data[0]]);
     const [radioVal, setRV] = useState(data[0]);
 
     let pageSize = 8;
@@ -1402,5 +1321,12 @@ body > .component-list-demo-drag-item {
 | onClick      | 点击回调事件 **v>=1.0.0**                                                                           | (e: event) => void  | -            |
 | onRightClick | 右键点击回调事件 **v>=1.0.0**                                                                       | (e: event) => void  | -            |
 
+
+## 文案规范
+
+- 首字母大写
+- 结尾不跟随标点符号
+- 语法平行：如主动态与被动态、陈述句与祈使句混合使用
+  
 ## 设计变量
 <DesignToken/>

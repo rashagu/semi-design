@@ -1,10 +1,3 @@
-/* eslint-disable prefer-destructuring */
-/* eslint-disable max-depth */
-/* eslint-disable max-nested-callbacks */
-/* eslint-disable max-len */
-/* eslint-disable no-param-reassign */
-/* eslint-disable eqeqeq */
-/* eslint-disable @typescript-eslint/no-empty-function */
 import {
     get,
     merge,
@@ -17,7 +10,8 @@ import {
     filter,
     isMap,
     slice,
-    isEqual
+    isEqual,
+    isUndefined
 } from 'lodash';
 import memoizeOne from 'memoize-one';
 
@@ -34,6 +28,7 @@ export interface BaseColumnProps<RecordType> {
     className?: string;
     colSpan?: number;
     dataIndex?: string;
+    defaultFilteredValue?: any[];
     defaultSortOrder?: BaseSortOrder;
     filterChildrenRecord?: boolean;
     filterDropdown?: any;
@@ -57,6 +52,7 @@ export interface BaseColumnProps<RecordType> {
     title?: any;
     useFullRender?: boolean;
     width?: string | number;
+    ellipsis?: BaseEllipsis
 }
 
 export interface TableAdapter<RecordType> extends DefaultAdapter {
@@ -80,6 +76,9 @@ export interface TableAdapter<RecordType> extends DefaultAdapter {
     getCachedFilteredSortedDataSource: () => RecordType[];
     getCachedFilteredSortedRowKeys: () => BaseRowKeyType[];
     getCachedFilteredSortedRowKeysSet: () => Set<BaseRowKeyType>;
+    setAllDisabledRowKeys: (allDisabledRowKeys: BaseRowKeyType[]) => void;
+    getAllDisabledRowKeys: () => BaseRowKeyType[];
+    getAllDisabledRowKeysSet: () => Set<BaseRowKeyType>;
     notifyFilterDropdownVisibleChange: (visible: boolean, dataIndex: string) => void;
     notifyChange: (changeInfo: { pagination: BasePagination; filters: BaseChangeInfoFilter<RecordType>[]; sorter: BaseChangeInfoSorter<RecordType>; extra: any }) => void;
     notifyExpand: (expanded?: boolean, record?: BaseIncludeGroupRecord<RecordType>, mouseEvent?: any) => void;
@@ -99,6 +98,7 @@ export interface TableAdapter<RecordType> extends DefaultAdapter {
     getHandleColumns: () => (queries: BaseColumnProps<RecordType>[], cachedColumns: BaseColumnProps<RecordType>[]) => BaseColumnProps<RecordType>[];
     getMergePagination: () => (pagination: BasePagination) => BasePagination;
     setBodyHasScrollbar: (bodyHasScrollBar: boolean) => void;
+    getTableLayout: () => 'fixed' | 'auto'
 }
 
 class TableFoundation<RecordType> extends BaseFoundation<TableAdapter<RecordType>> {
@@ -112,6 +112,47 @@ class TableFoundation<RecordType> extends BaseFoundation<TableAdapter<RecordType
     memoizedFilterColumns: (columns: BaseColumnProps<RecordType>[], ignoreKeys?: string[]) => BaseColumnProps<RecordType>[];
     memoizedFlattenFnsColumns: (columns: BaseColumnProps<RecordType>[], childrenColumnName?: string) => BaseColumnProps<RecordType>[];
     memoizedPagination: (pagination: BasePagination) => BasePagination;
+
+    /**
+     * update columns in place, and use default values as initial values if the sorting and filtering columns have no values
+     */
+    static initColumnsFilteredValueAndSorterOrder(columns: BaseColumnProps<unknown>[]) {
+        columns.forEach(column => {
+            TableFoundation.initFilteredValue(column);
+            TableFoundation.initSorterOrder(column);
+        });
+        return columns;
+    }
+
+    /**
+     * init filteredValue of filtering column, use defaultFilteredValue or [] when it is undefined
+     */
+    static initFilteredValue(column: BaseColumnProps<unknown>) {
+        const { defaultFilteredValue, filteredValue } = column;
+        // There may be cases where onFilter is empty, such as server-side filtering
+        // Because filterValue affects the output of filters, it needs to be initialized here
+        if (isUndefined(filteredValue)) {
+            if (Array.isArray(defaultFilteredValue) && defaultFilteredValue.length) {
+                column.filteredValue = defaultFilteredValue;
+            } else {
+                column.filteredValue = [];
+            }
+        }
+    }
+
+    /**
+     * init sortOrder of sorting column, use defaultSortOrder or [] when it is undefined
+     */
+    static initSorterOrder(column: BaseColumnProps<unknown>) {
+        const { defaultSortOrder, sortOrder, sorter } = column;
+        if (sorter && isUndefined(sortOrder)) {
+            if (!isUndefined(defaultSortOrder)) {
+                column.sortOrder = defaultSortOrder;
+            } else {
+                column.sortOrder = false;
+            }
+        }
+    }
 
     constructor(adapter: TableAdapter<RecordType>) {
         super({ ...adapter });
@@ -132,12 +173,14 @@ class TableFoundation<RecordType> extends BaseFoundation<TableAdapter<RecordType
         const dataSource = [...this.getProp('dataSource')];
         const { queries } = this._adapter.getStates();
         const filteredSortedDataSource = this.getFilteredSortedDataSource(dataSource, queries);
+        const allDataDisabledRowKeys = this.getAllDisabledRowKeys(filteredSortedDataSource);
         const pageData = this.getCurrentPageData(filteredSortedDataSource);
         this.setAdapterPageData(pageData);
         this.initExpandedRowKeys(pageData);
         this.initSelectedRowKeys(pageData);
         // cache dataSource after mount, and then calculate it on demand
         this.setCachedFilteredSortedDataSource(filteredSortedDataSource);
+        this.setAllDisabledRowKeys(allDataDisabledRowKeys);
     }
 
     initExpandedRowKeys({ groups }: { groups?: Map<string, RecordType[]> } = {}) {
@@ -161,6 +204,7 @@ class TableFoundation<RecordType> extends BaseFoundation<TableAdapter<RecordType
         } else if (defaultExpandAllGroupRows || expandAllGroupRows) {
             this._addNoDuplicatedItemsToArr(
                 expandedRowKeys,
+                propExpandedRowKeys,
                 groups && isMap(groups) && groups.size ? Array.from(groups.keys()) : []
             );
         } else if (Array.isArray(defaultExpandedRowKeys) && defaultExpandedRowKeys.length) {
@@ -200,13 +244,14 @@ class TableFoundation<RecordType> extends BaseFoundation<TableAdapter<RecordType
      */
     getFilteredSortedDataSource(dataSource: RecordType[], queries: BaseColumnProps<RecordType>[]) {
         const filteredDataSource = this.filterDataSource(dataSource, queries.filter(
-            query => (
-                isFunction(query.onFilter) &&
-                Array.isArray(query.filters) &&
-                query.filters.length &&
-                Array.isArray(query.filteredValue) &&
-                query.filteredValue.length
-            )
+            query => {
+                const currentFilteredValue = query.filteredValue ? query.filteredValue : query.defaultFilteredValue;
+                return (
+                    isFunction(query.onFilter) &&
+                    Array.isArray(currentFilteredValue) &&
+                    currentFilteredValue.length
+                );
+            }
         ));
         const sortedDataSource = this.sortDataSource(filteredDataSource, queries.filter(query => query && isFunction(query.sorter)));
         return sortedDataSource;
@@ -371,8 +416,9 @@ class TableFoundation<RecordType> extends BaseFoundation<TableAdapter<RecordType
         const childrenRecordName = this.getProp('childrenRecordName');
 
         each(filters, filterObj => {
-            const { onFilter, filteredValue, filterChildrenRecord } = filterObj;
-            if (typeof onFilter === 'function' && Array.isArray(filteredValue) && filteredValue.length) {
+            const { onFilter, filteredValue, filterChildrenRecord, defaultFilteredValue } = filterObj;
+            const currentFilteredValue = Array.isArray(filteredValue) ? filteredValue : defaultFilteredValue;
+            if (typeof onFilter === 'function' && Array.isArray(currentFilteredValue) && currentFilteredValue.length) {
                 hasValidFilters = true;
 
                 if (filteredData === null) {
@@ -381,8 +427,8 @@ class TableFoundation<RecordType> extends BaseFoundation<TableAdapter<RecordType
                     dataSource = Array.from(filteredData && filteredData.values());
                     filteredData = new Map();
                 }
-                each(filteredValue, value => {
-                    each(dataSource, record => {
+                each(dataSource, record => {
+                    each(currentFilteredValue, value => {
                         const childrenRecords = get(record, childrenRecordName);
                         const recordKey = this.getRecordKey(record);
 
@@ -407,6 +453,7 @@ class TableFoundation<RecordType> extends BaseFoundation<TableAdapter<RecordType
                                             }
                                             return arr;
                                         },
+                                        // @ts-ignore
                                         [...children]
                                     ),
                                 });
@@ -465,8 +512,7 @@ class TableFoundation<RecordType> extends BaseFoundation<TableAdapter<RecordType
 
             if (!this._pagerIsControlled()) {
                 const total = get(propPagination, 'total', dataSource.length);
-                const pageSize = get(propPagination, 'pageSize', pagination.pageSize);
-                const { currentPage } = pagination;
+                const { currentPage, pageSize } = pagination;
 
                 const realTotalPage = Math.ceil(total / pageSize);
 
@@ -502,6 +548,10 @@ class TableFoundation<RecordType> extends BaseFoundation<TableAdapter<RecordType
 
     destroy() { }
 
+    setAllDisabledRowKeys(disabledRowKeys) {
+        this._adapter.setAllDisabledRowKeys(disabledRowKeys);
+    }
+
     handleClick(e: any) { }
 
     handleMouseEnter(e: any) { }
@@ -509,24 +559,13 @@ class TableFoundation<RecordType> extends BaseFoundation<TableAdapter<RecordType
     handleMouseLeave(e: any) { }
 
     stopPropagation(e: any) {
-        if (e && typeof e === 'object') {
-            if (typeof e.stopPropagation === 'function') {
-                e.stopPropagation();
-            }
-            if (e.nativeEvent && typeof e.nativeEvent.stopPropagation === 'function') {
-                e.nativeEvent.stopPropagation();
-            } else if (typeof e.stopImmediatePropagation === 'function') {
-                e.stopImmediatePropagation();
-            }
-        }
+        this._adapter.stopPropagation(e);
     }
 
     /**
      * Add non-repeating elements to the array itself
-     * @param {Array} srcArr
-     * @param {Object} objArrs
      */
-    _addNoDuplicatedItemsToArr(srcArr: any[] = [], ...objArrs: any[]) {
+    _addNoDuplicatedItemsToArr(srcArr: any[] = [], ...objArrs: any[][]) {
         for (const objArr of objArrs) {
             if (Array.isArray(objArr)) {
                 for (const item of objArr) {
@@ -629,6 +668,9 @@ class TableFoundation<RecordType> extends BaseFoundation<TableAdapter<RecordType
         return this.getState('pagination') || {};
     }
 
+    /**
+     * Filters are considered valid if filteredValue exists
+     */
     _getAllFilters(queries?: BaseColumnProps<RecordType>[]) {
         queries = queries || this.getState('queries');
         const filters: BaseChangeInfoFilter<RecordType>[] = [];
@@ -742,8 +784,8 @@ class TableFoundation<RecordType> extends BaseFoundation<TableAdapter<RecordType
             let selectedRowKeys = [...curSelectedRowKeys];
             const selectedRowKeysSet = this._getSelectedRowKeysSet();
             let allRowKeys = [...this._adapter.getCachedFilteredSortedRowKeys()];
-            const disabledRowKeys = this.getAllDisabledRowKeys();
-            const disabledRowKeysSet = new Set(disabledRowKeys);
+            const disabledRowKeys = this._adapter.getAllDisabledRowKeys();
+            const disabledRowKeysSet = this._adapter.getAllDisabledRowKeysSet();
             let changedRowKeys;
 
             // Select all, if not disabled && not in selectedRowKeys
@@ -946,7 +988,8 @@ class TableFoundation<RecordType> extends BaseFoundation<TableAdapter<RecordType
             }
             return true;
         } else {
-            return false;
+            const isAllSelected = allKeys.every(rowKey => selectedRowKeysSet.has(rowKey));
+            return isAllSelected || false;
         }
     }
 
@@ -989,7 +1032,6 @@ class TableFoundation<RecordType> extends BaseFoundation<TableAdapter<RecordType
         let filterObj: BaseColumnProps<RecordType> = this.getQuery(dataIndex);
         const filterDropdownVisible = visible;
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         filterObj = { ...filterObj, filterDropdownVisible };
 
         if (!this._filterShowIsControlled()) {
@@ -1088,7 +1130,9 @@ class TableFoundation<RecordType> extends BaseFoundation<TableAdapter<RecordType
     handleClickFilterOrSorter(queries: BaseColumnProps<RecordType>[]) {
         const dataSource = [...this.getProp('dataSource')];
         const sortedDataSource = this.getFilteredSortedDataSource(dataSource, queries);
+        const allDataDisabledRowKeys = this.getAllDisabledRowKeys(sortedDataSource);
         this.setCachedFilteredSortedDataSource(sortedDataSource);
+        this.setAllDisabledRowKeys(allDataDisabledRowKeys);
         const pageData = this.getCurrentPageData(sortedDataSource);
         this.setAdapterPageData(pageData);
     }
@@ -1132,11 +1176,11 @@ export interface BasePagination {
     pageSize?: number;
     position?: ArrayElement<typeof strings.PAGINATION_POSITIONS>;
     defaultCurrentPage?: number;
-    formatPageText?: any;
+    formatPageText?: any
 }
 export interface BaseHeadWidth {
     width: number;
-    key: string;
+    key: string
 }
 export interface BasePageData<RecordType> {
     dataSource?: RecordType[];
@@ -1144,7 +1188,7 @@ export interface BasePageData<RecordType> {
     pagination?: BasePagination;
     disabledRowKeys?: BaseRowKeyType[];
     allRowKeys?: BaseRowKeyType[];
-    queries?: BaseColumnProps<RecordType>[];
+    queries?: BaseColumnProps<RecordType>[]
 }
 
 export type GetCheckboxProps<RecordType> = (record?: RecordType) => BaseCheckboxProps;
@@ -1154,10 +1198,10 @@ export interface BaseSorterInfo<RecordType> {
     [x: string]: any;
     dataIndex?: string;
     sortOrder?: BaseSortOrder;
-    sorter?: BaseSorter<RecordType>;
+    sorter?: BaseSorter<RecordType>
 }
 export type BaseSortOrder = boolean | ArrayElement<typeof strings.SORT_DIRECTIONS>;
-export type BaseSorter<RecordType> = boolean | ((a?: RecordType, b?: RecordType) => number);
+export type BaseSorter<RecordType> = boolean | ((a?: RecordType, b?: RecordType, sortOrder?: 'ascend' | 'descend') => number);
 export interface BaseChangeInfoFilter<RecordType> {
     dataIndex?: string;
     value?: any;
@@ -1165,13 +1209,14 @@ export interface BaseChangeInfoFilter<RecordType> {
     filters?: BaseFilter[];
     onFilter?: (filteredValue?: any, record?: RecordType) => boolean;
     filteredValue?: any[];
+    defaultFilteredValue?: any[];
     children?: BaseFilter[];
-    filterChildrenRecord?: boolean;
+    filterChildrenRecord?: boolean
 }
 export interface BaseFilter {
     value?: any;
     text?: any;
-    children?: BaseFilter[];
+    children?: BaseFilter[]
 }
 export type BaseFixed = ArrayElement<typeof strings.FIXED_SET>;
 export type BaseAlign = ArrayElement<typeof strings.ALIGNS>;
@@ -1180,7 +1225,7 @@ export interface BaseOnCellReturnObject {
     [x: string]: any;
     style?: Record<string, any>;
     className?: string;
-    onClick?: (e: any) => void;
+    onClick?: (e: any) => void
 }
 export type BaseOnFilter<RecordType> = (filteredValue?: any, record?: RecordType) => boolean;
 
@@ -1192,15 +1237,17 @@ export interface BaseOnHeaderCellReturnObject {
     [x: string]: any;
     style?: Record<string, any>;
     className?: string;
-    onClick?: (e: any) => void;
+    onClick?: (e: any) => void
 }
 export interface BaseChangeInfoSorter<RecordType> {
     [x: string]: any;
     dataIndex: string;
     sortOrder: BaseSortOrder;
-    sorter: BaseSorter<RecordType>;
+    sorter: BaseSorter<RecordType>
 }
 
 export type BaseIncludeGroupRecord<RecordType> = RecordType | { groupKey: string };
+
+export type BaseEllipsis = boolean | { showTitle: boolean };
 
 export default TableFoundation;

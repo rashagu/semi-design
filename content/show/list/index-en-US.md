@@ -1,23 +1,19 @@
 ---
 localeCode: en-US
-order: 50
+order: 57
 category: Show
 title: List
 subTitle: List
 icon: doc-list
 dir: column
-brief: Lists display a set of related contents.
+brief: Lists display a set of related contents
 ---
-
-## When to Use
-
-Lists display a set of texts, lists, images, paragraphs, etc. It is commonly used in data display pages.
 
 ## Demos
 
 ### How to import
 
-```jsx import 
+```jsx import
 import { List } from '@douyinfe/semi-ui';
 ```
 
@@ -920,84 +916,6 @@ class DraggableList extends React.Component {
 render(DraggableList);
 ```
 
-
-If you use [react-sortable-hoc](https://github.com/clauderic/react-sortable-hoc), here is also an example
-
-```jsx live=true dir="column" hideInDSM
-import React, { useState } from 'react';
-import { List } from '@douyinfe/semi-ui';
-import { IconHandle } from '@douyinfe/semi-icons';
-import { SortableContainer, SortableElement, sortableHandle } from 'react-sortable-hoc';
-
-() => {
-    const data = [
-        'Siege',
-        'The ordinary world',
-        'Three Body',
-        'Snow in the Snow',
-        'Saharan story',
-        'Those things',
-        'A little monk of Zen',
-        'Dune',
-        'The courage to be hated',
-        'Crime and Punishment',
-        'Moon and sixpence',
-        'The silent majority',
-        'First person singular',
-    ];
-
-    const [list, setList] = useState(data.slice(0, 6));
-
-    const renderItem = (props) => {
-        const { item } = props;
-        const DragHandle = sortableHandle(() => <IconHandle className={`list-item-drag-handler`} style={{ marginRight: 4 }} />);
-        return (
-            <List.Item className='component-list-demo-drag-item list-item'>
-                <DragHandle />
-                {item}
-            </List.Item>
-        );
-    };
-
-    const arrayMove = (array, from, to) => {
-        let newArray = array.slice();
-        newArray.splice(to < 0 ? newArray.length + to : to, 0, newArray.splice(from, 1)[0]);
-        return newArray;
-    };
-
-    const onSortEnd = (callbackProps) => {
-        let { oldIndex, newIndex } = callbackProps;
-        let newList = arrayMove(list, oldIndex, newIndex);
-        setList(newList);
-    };
-    
-    const SortableItem = SortableElement(props => renderItem(props));
-    const SortableList = SortableContainer(
-        ({ items }) => {
-            return (
-                <div className="sortable-list-main">
-                    {items.map((item, index) => (
-                        <SortableItem key={item} index={index} item={item}></SortableItem>
-                    ))}
-                </div>
-            );
-        },
-        { distance: 10 }
-    );
-
-    return (
-        <div>
-            <div style={{ marginRight: 16, width: 280, display: 'flex', flexWrap: 'wrap', border: '1px solid var(--semi-color-border)' }}>
-                <List style={{ width: '100%' }} className='component-list-demo-booklist'>
-                    <SortableList useDragHandle onSortEnd={onSortEnd} items={list}></SortableList>
-                </List>
-            </div>
-
-        </div>
-    );
-};
-```
-
 ### With Pagination
 
 You can use Pagination in combination to achieve a paged List
@@ -1102,8 +1020,8 @@ import { IconSearch } from '@douyinfe/semi-icons';
                 />
             </div>
         </div>
-    )
-}
+    );
+};
 ```
 
 ### Add delete item
@@ -1137,7 +1055,7 @@ import { IconMinusCircle, IconPlusCircle } from '@douyinfe/semi-icons';
         if (item) {
             newList = list.filter(i => item !== i);
         } else {
-            newList = list.concat(data.slice(list.length, list.length + 1))
+            newList = list.concat(data.slice(list.length, list.length + 1));
         }
         setList(newList);
     };
@@ -1158,8 +1076,8 @@ import { IconMinusCircle, IconPlusCircle } from '@douyinfe/semi-icons';
                         </div>
                     }
                 />
-                <div style={{ margin: 4, fontSize: 14  }} onClick={() => updateList()}>
-                    <Button theme='borderless'  icon={<IconPlusCircle />}  style={{ marginRight: 4, color: 'var(--semi-color-info)' }}>
+                <div style={{ margin: 4, fontSize: 14 }} onClick={() => updateList()}>
+                    <Button theme='borderless' icon={<IconPlusCircle />} style={{ marginRight: 4, color: 'var(--semi-color-info)' }}>
                     </Button>
                     Add book
                 </div>
@@ -1196,7 +1114,7 @@ import { List, Input, Button, Checkbox, Radio, RadioGroup, CheckboxGroup } from 
     ];
 
     const [page, onPageChange] = useState(1);
-    const [checkboxVal, setCV] = useState(data[0]);
+    const [checkboxVal, setCV] = useState([...data[0]]);
     const [radioVal, setRV] = useState(data[0]);
 
     let pageSize = 8;
@@ -1394,6 +1312,12 @@ body > .component-list-demo-drag-item {
 | onClick      | Callback function when click an item **v>=1.0.0**                                                       | function  | -            |
 | onRightClick | Callback function when right click an item **v>=1.0.0**                                                 | function  | -            |
 | style        | Inline style                                                                                            | CSSProperties    | -            |
+
+## Content Guidelines
+
+- Capitalize the first letter
+- do not follow punctuation at the end
+- Grammatical parallelism: mixed use of active and passive, declarative and imperative sentences
 
 ## Design Tokens
 <DesignToken/>

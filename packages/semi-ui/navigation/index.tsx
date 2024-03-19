@@ -1,6 +1,5 @@
-/* eslint-disable max-lines-per-function */
 import BaseComponent, { BaseProps } from '../_base/baseComponent';
-import React, { Children } from 'react';
+import React, { Children, ReactElement, ReactNode } from 'react';
 import PropTypes from 'prop-types';
 import cls from 'classnames';
 import { noop, get, isEqual } from 'lodash';
@@ -15,15 +14,13 @@ import Header, { NavHeaderProps } from './Header';
 import NavContext from './nav-context';
 import LocaleConsumer from '../locale/localeConsumer';
 import '@douyinfe/semi-foundation/navigation/navigation.scss';
-import { Motion } from '../_base/base';
+import { getDefaultPropsFromGlobalConfig } from "../_utils";
 
-export { CollapseButtonProps } from './CollapseButton';
-export { NavFooterProps } from './Footer';
-export { NavHeaderProps } from './Header';
-export { NavItemProps } from './Item';
-export { OpenIconTransitionProps } from './OpenIconTransition';
-export { ToggleIcon, SubNavProps } from './SubNav';
-export { SubNavTransitionProps } from './SubNavTransition';
+export type { CollapseButtonProps } from './CollapseButton';
+export type { NavFooterProps } from './Footer';
+export type { NavHeaderProps } from './Header';
+export type { NavItemProps } from './Item';
+export type { SubNavProps } from './SubNav';
 export type Mode = 'vertical' | 'horizontal';
 
 export interface OnSelectedData {
@@ -31,15 +28,15 @@ export interface OnSelectedData {
     selectedKeys: React.ReactText[];
     selectedItems: (NavItemProps | SubNavProps)[];
     domEvent: React.MouseEvent;
-    isOpen: boolean;
+    isOpen: boolean
 }
 
 export interface SubNavPropsWithItems extends SubNavProps {
-    items?: (SubNavPropsWithItems | string)[];
+    items?: (SubNavPropsWithItems | string)[]
 }
 
 export interface NavItemPropsWithItems extends NavItemProps {
-    items?: (NavItemPropsWithItems | string)[];
+    items?: (NavItemPropsWithItems | string)[]
 }
 
 export type NavItems = (string | SubNavPropsWithItems | NavItemPropsWithItems)[];
@@ -47,11 +44,13 @@ export type NavItems = (string | SubNavPropsWithItems | NavItemPropsWithItems)[]
 export interface NavProps extends BaseProps {
     bodyStyle?: React.CSSProperties;
     children?: React.ReactNode;
+    
     defaultIsCollapsed?: boolean;
     defaultOpenKeys?: React.ReactText[];
     defaultSelectedKeys?: React.ReactText[];
-    footer?: React.ReactNode | NavHeaderProps;
-    header?: React.ReactNode | NavFooterProps;
+    expandIcon?: React.ReactNode;
+    footer?: React.ReactNode | NavFooterProps;
+    header?: React.ReactNode | NavHeaderProps;
     isCollapsed?: boolean;
     items?: NavItems;
     limitIndent?: boolean;
@@ -61,16 +60,18 @@ export interface NavProps extends BaseProps {
     prefixCls?: string;
     selectedKeys?: React.ReactText[];
     subNavCloseDelay?: number;
-    subNavMotion?: Motion;
+    subNavMotion?: boolean;
     subNavOpenDelay?: number;
     toggleIconPosition?: string;
     tooltipHideDelay?: number;
     tooltipShowDelay?: number;
-    onClick?: (data: { itemKey: React.ReactText; domEvent: MouseEvent; isOpen: boolean }) => void;
+    getPopupContainer?: () => HTMLElement;
+    onClick?: (data: { itemKey?: React.ReactText; domEvent?: MouseEvent; isOpen?: boolean }) => void;
     onCollapseChange?: (isCollapse: boolean) => void;
     onDeselect?: (data?: any) => void;
-    onOpenChange?: (data: { itemKey: (string | number); openKeys: (string | number)[]; domEvent: MouseEvent; isOpen: boolean }) => void;
+    onOpenChange?: (data: { itemKey?: (string | number); openKeys?: (string | number)[]; domEvent?: MouseEvent; isOpen?: boolean }) => void;
     onSelect?: (data: OnSelectedData) => void;
+    renderWrapper?: ({ itemElement, isSubNav, isInSubNav, props }: { itemElement: ReactElement;isInSubNav: boolean; isSubNav: boolean; props: NavItemProps | SubNavProps }) => ReactNode
 }
 
 export interface NavState {
@@ -79,7 +80,7 @@ export interface NavState {
     openKeys: (string | number)[];
     items: any[];
     itemKeysMap: { [itemKey: string]: (string | number)[] };
-    selectedKeys: (string | number)[];
+    selectedKeys: (string | number)[]
 }
 
 function createAddKeysFn(context: Nav, keyName: string | number) {
@@ -114,11 +115,13 @@ class Nav extends BaseComponent<NavProps, NavState> {
     static Footer = Footer;
 
     static propTypes = {
+        collapseIcon: PropTypes.node,
         // Initial expanded SubNav navigation key array
         defaultOpenKeys: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
         openKeys: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
         // Initial selected navigation key array
         defaultSelectedKeys: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
+        expandIcon: PropTypes.node,
         selectedKeys: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
         // Navigation type, now supports vertical, horizontal
         mode: PropTypes.oneOf([...strings.MODE]),
@@ -149,10 +152,11 @@ class Nav extends BaseComponent<NavProps, NavState> {
         prefixCls: PropTypes.string,
         header: PropTypes.oneOfType([PropTypes.node, PropTypes.object]),
         footer: PropTypes.oneOfType([PropTypes.node, PropTypes.object]),
-        limitIndent: PropTypes.bool
+        limitIndent: PropTypes.bool,
+        getPopupContainer: PropTypes.func,
     };
-
-    static defaultProps = {
+    static __SemiComponentName__ = "Navigation";
+    static defaultProps = getDefaultPropsFromGlobalConfig(Nav.__SemiComponentName__, {
         subNavCloseDelay: numbers.DEFAULT_SUBNAV_CLOSE_DELAY,
         subNavOpenDelay: numbers.DEFAULT_SUBNAV_OPEN_DELAY,
         tooltipHideDelay: numbers.DEFAULT_TOOLTIP_HIDE_DELAY,
@@ -170,9 +174,10 @@ class Nav extends BaseComponent<NavProps, NavState> {
         // defaultOpenKeys: [],
         // defaultSelectedKeys: [],
         // items: [],
-    };
+    });
 
     itemsChanged: boolean;
+    foundation: NavigationFoundation;
     constructor(props: NavProps) {
         super(props);
         this.foundation = new NavigationFoundation(this.adapter);
@@ -211,24 +216,19 @@ class Nav extends BaseComponent<NavProps, NavState> {
         // override BaseComponent
     }
 
-    componentDidUpdate(prevProps: NavProps, prevState: NavState) {
+    componentDidUpdate(prevProps: NavProps) {
         if (prevProps.items !== this.props.items || prevProps.children !== this.props.children) {
             this.foundation.init();
         } else {
             this.foundation.handleItemsChange(false);
-            const { selectedKeys } = this.state;
-
             if (this.props.selectedKeys && !isEqual(prevProps.selectedKeys, this.props.selectedKeys)) {
                 this.adapter.updateSelectedKeys(this.props.selectedKeys);
+                const willOpenKeys = this.foundation.getWillOpenKeys(this.state.itemKeysMap);
+                this.adapter.updateOpenKeys(willOpenKeys);
             }
 
             if (this.props.openKeys && !isEqual(prevProps.openKeys, this.props.openKeys)) {
                 this.adapter.updateOpenKeys(this.props.openKeys);
-            }
-
-            if (!isEqual(selectedKeys, prevState.selectedKeys)) {
-                const parentSelectKeys = this.foundation.selectLevelZeroParentKeys(null, ...selectedKeys);
-                this.adapter.addSelectedKeys(...parentSelectKeys);
             }
         }
     }
@@ -244,7 +244,17 @@ class Nav extends BaseComponent<NavProps, NavState> {
             setItemKeysMap: itemKeysMap => this.setState({ itemKeysMap: { ...itemKeysMap } }),
             addSelectedKeys: createAddKeysFn(this, 'selectedKeys'),
             removeSelectedKeys: createRemoveKeysFn(this, 'selectedKeys'),
-            updateSelectedKeys: selectedKeys => this.setState({ selectedKeys: [...selectedKeys] }),
+            /**
+             * when `includeParentKeys` is `true`, select a nested nav item will select parent nav sub
+             */
+            updateSelectedKeys: (selectedKeys: (string | number)[], includeParentKeys = true) => {
+                let willUpdateSelectedKeys = selectedKeys;
+                if (includeParentKeys) {
+                    const parentSelectKeys = this.foundation.selectLevelZeroParentKeys(null, selectedKeys);
+                    willUpdateSelectedKeys = Array.from(new Set(selectedKeys.concat(parentSelectKeys)));
+                }
+                this.setState({ selectedKeys: willUpdateSelectedKeys });
+            },
             updateOpenKeys: openKeys => this.setState({ openKeys: [...openKeys] }),
             addOpenKeys: createAddKeysFn(this, 'openKeys'),
             removeOpenKeys: createRemoveKeysFn(this, 'openKeys'),
@@ -261,12 +271,18 @@ class Nav extends BaseComponent<NavProps, NavState> {
      * @returns {JSX.Element}
      */
     renderItems(items: (SubNavPropsWithItems | NavItemPropsWithItems)[] = [], level = 0) {
+        const { expandIcon } = this.props;
         const finalDom = (
             <>
                 {items.map((item, idx) => {
                     if (Array.isArray(item.items) && item.items.length) {
                         return (
-                            <SubNav key={item.itemKey || String(level) + idx} {...item as SubNavPropsWithItems} level={level}>
+                            <SubNav
+                                key={item.itemKey || String(level) + idx}
+                                {...item as SubNavPropsWithItems}
+                                level={level}
+                                expandIcon={expandIcon}
+                            >
                                 {this.renderItems(item.items as (SubNavPropsWithItems | NavItemPropsWithItems)[], level + 1)}
                             </SubNav>
                         );
@@ -302,7 +318,10 @@ class Nav extends BaseComponent<NavProps, NavState> {
             footer,
             header,
             toggleIconPosition,
-            limitIndent
+            limitIndent,
+            renderWrapper,
+            getPopupContainer,
+            ...rest
         } = this.props;
 
         const { selectedKeys, openKeys, items, isCollapsed } = this.state;
@@ -341,12 +360,12 @@ class Nav extends BaseComponent<NavProps, NavState> {
             for (let i = 0; i < childrenLength; i++) {
                 const child = children[i];
 
-                if ((child as any).type === Footer || get(child, 'type.name') === 'NavFooter') {
+                if ((child as any).type === Footer || get(child, 'type.elementType') === 'NavFooter') {
                     footers.push(child);
                     children.splice(i, 1);
                     i--;
                     childrenLength--;
-                } else if ((child as any).type === Header || get(child, 'type.name') === 'NavHeader') {
+                } else if ((child as any).type === Header || get(child, 'type.elementType') === 'NavHeader') {
                     headers.push(child);
                     children.splice(i, 1);
                     i--;
@@ -400,15 +419,17 @@ class Nav extends BaseComponent<NavProps, NavState> {
                             locale,
                             prefixCls,
                             toggleIconPosition,
-                            limitIndent
+                            limitIndent,
+                            renderWrapper,
+                            getPopupContainer
                         } as any}
                     >
-                        <div className={finalCls} style={finalStyle}>
+                        <div className={finalCls} style={finalStyle} {...this.getDataAttr(rest)}>
                             <div className={`${prefixCls}-inner`}>
                                 <div className={headerListOuterCls}>
                                     {headers}
                                     <div style={bodyStyle} className={`${prefixCls}-list-wrapper`}>
-                                        <ul className={`${prefixCls}-list`}>
+                                        <ul role="menu" aria-orientation={mode} className={`${prefixCls}-list`}>
                                             {this.adapter.getCache('itemElems')}
                                             {children}
                                         </ul>

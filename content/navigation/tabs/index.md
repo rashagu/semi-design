@@ -1,6 +1,6 @@
 ---
 localeCode: zh-CN
-order: 39
+order: 43
 category: 导航类
 title: Tabs 标签栏
 icon: doc-tabs
@@ -18,10 +18,14 @@ import { Tabs, TabPane } from '@douyinfe/semi-ui';
 ### 基本用法
 
 标签栏支持三种样式的显示：线条式，按钮式，卡片式。默认选中第一项。  
-标签页支持两种传入方式：通过 `tabList` 传入标签页对象的数组，或使用 `<TabPane>` 逐项显式传入。  
-两种方式建议不要同时使用，同时使用时会优先渲染通过 `tabList` 传入的数据。
+标签页支持两种传入方式，两者渲染流程上有所区别：
+- 通过 `tabList` 传入标签页对象的数组，当使用 `tabList` 时每次只渲染当前传入的节点
+- 或使用 `<TabPane>` 逐项显式传入，使用 `<TabPane>` 时默认会渲染所有面板，可以通过设置 `keepDOM={false}` 只渲染当前面板，此时不会有动画效果。
 
-> 当使用 `tabList` 时每次只渲染当前传入的节点使用 `<TabPane>` 时默认会渲染所有面板。可以通过设置 `keepDOM={false}` 只渲染当前面板，此时不会有动画效果。
+<Notice title='注意事项'>
+    1. tabList 与 TabPane Children 同时使用时，会优先渲染通过 tabList 传入的数据。不建议同时配置 <br/>
+    2. 使用 TabPane Children 时， TabPane 必须为 Tabs 的直接子元素，否则 Tabs 将无法正确收集子组件如 itemKey 等相关属性
+</Notice>
 
 ```jsx live=true
 import React from 'react';
@@ -64,7 +68,7 @@ import { Tabs, TabPane } from '@douyinfe/semi-ui';
                         padding: '20px',
                         border: 'none',
                         whiteSpace: 'normal',
-                        borderRadius: '6px',
+                        borderRadius: 'var(--semi-border-radius-medium)',
                         color: 'var(--semi-color-text-1)',
                         backgroundColor: 'var(--semi-color-fill-0)',
                     }}
@@ -230,8 +234,10 @@ class App extends React.Component {
                 <RadioGroup
                     onChange={e => this.onSelect(e)}
                     value={this.state.type}
+                    type='button'
                     style={{
                         display: 'flex',
+                        width: 200,
                         justifyContent: 'center',
                     }}
                 >
@@ -523,17 +529,17 @@ class App extends React.Component {
         super(props);
         this.state = {
             tabList: [
-                {tab: '文档', itemKey:'1', text:'文档', closable:true},
-                {tab: '快速起步', itemKey:'2', text:'快速起步', closable:true},
-                {tab: '帮助', itemKey:'3', text:'帮助'},
+                { tab: '文档', itemKey: '1', text: '文档', closable: true },
+                { tab: '快速起步', itemKey: '2', text: '快速起步', closable: true },
+                { tab: '帮助', itemKey: '3', text: '帮助' },
             ]
-        }
+        };
     }
     close(key){
         const newTabList = [...this.state.tabList];
         const closeIndex = newTabList.findIndex(t=>t.itemKey===key);
         newTabList.splice(closeIndex, 1);
-        this.setState({tabList:newTabList});
+        this.setState({ tabList: newTabList });
     }
     render() {
         return (
@@ -562,12 +568,13 @@ defaultActiveKey | 初始化选中的 tab 页的 key 值 | string | '1' |
 keepDOM | 使用 TabPane 写法时是否渲染隐藏面板的 DOM 结构，**>=1.0.0** | boolean | true |
 lazyRender | 懒渲染，仅当面板激活过才被渲染在 DOM 树中, **>=1.0.0** | boolean | false |
 renderTabBar | 用于二次封装标签栏 | (tabBarProps: object, defaultTabBar: React.ComponentType) => ReactNode | 无 |
+preventScroll | 指示浏览器是否应滚动文档以显示新聚焦的元素，作用于组件内的 focus 方法 | boolean |  |  |
 size | 大小，提供 `large`、`medium`、`small` 三种类型，**>=1.11.0，目前仅支持线性 Tabs** | string | `large` |
 style | 样式对象 | CSSProperties | 无 |
 tabBarExtraContent | 用于扩展标签栏的内容 | ReactNode | 无 |
 tabList | 标签页对象组成的数组，该对象支持 itemKey（对应 activeKey，tab（标签页文字）及 icon（标签页图标） | TabPane[] | 无 |
 tabPaneMotion | 是否使用动画切换 tabs | boolean | true |
-tabPosition | tab 的位置，支持`top`(水平), `left`(垂直)，**>=1.0.0** | boolean | `top` |
+tabPosition | tab 的位置，支持`top`(水平), `left`(垂直)，**>=1.0.0** | string | `top` |
 type | 标签栏的样式，可选`line`、 `card`、 `button` | string | `line` |
 onChange | 切换 tab 页时的回调函数 | function(activeKey: string) | 无 |
 onTabClick | 单击事件 | function(key: string, e: Event) | 无 |
@@ -585,6 +592,53 @@ style     | 样式对象         | CSSProperties             | 无     |
 tab       | 标签页栏显示文字 | ReactNode | 无     |
 closable  | 允许关闭tab **>=2.1.0**| boolean | false |
 
+## Accessibility
+
+### ARIA
+- 关于 role
+  - TabBar 对应的 role 为 `tablist`
+  - TabBar 中的 Tab 对应的 role 为 `tab`
+  - TabPane 对应的 role 为 `tabpanel`
+- aria-orientation: 表明 TabBar 的方向，有 `vertical` 和 `horizontal` 两种。当传入 tabPosition 为 left 时, aria-orientation 会被设置为 `vertical`，tabPosition 为 top 时，设置为 `horizontal`
+- aria-disabled: 当 TabPane 设置为 disabled 时，对应 Tab 的 aria-disabled 会被设置为 true
+- aria-selected: 表明 Tab 是否被选中
+- aria-controls: 指向 Tab 标签所控制的 TabPane
+- aria-labelledby: 指向设置 TabPane 标签的元素
+
+### 键盘和焦点
+WAI-ARIA: https://www.w3.org/WAI/ARIA/apg/patterns/tabpanel/
+- 选项卡可以被获取到焦点，但禁用的选项卡除外
+- 键盘用户可以使用 `Tab` 键，将焦点移动到已被选择的选项卡元素的选项卡面板上
+- 当焦点位于水平选项卡列表中的选项卡元素上时，使用 `左右箭头` 来切换选项
+- 当焦点位于垂直选项卡列表中的选项卡元素上时，使用 `上下箭头` 来切换选项
+- 当焦点位于选项卡列表中的未被激活的选项卡元素上时，可以使用 `Space` 或 `Enter` 键来激活该选项卡
+- 当键盘用户想要直接将焦点聚焦到选项卡列表中的最后一个选项卡元素时：
+    - Mac 用户：`fn` + `右箭头`
+    - Windows 用户：`End`
+- 当键盘用户想要直接将焦点聚焦到选项卡列表中的第一个选项卡元素时：
+    - Mac 用户：`fn` + `左箭头`
+    - Windows 用户：`Home`
+- 当选项卡允许被删除时：
+    - 用户可以使用 `Delete` 键删除选项卡
+    - 删除后，焦点转移到被删除选项卡元素的后一个元素上；若被删除元素无后一个元素则转移到前一个元素上
+
+
 ## 设计变量
 
 <DesignToken/>
+
+## 文案规范
+- 标签文案需要准确清晰地解释标签内容
+- 用简短的，易区分的标签
+- 尽量保持在一个词以内
+
+
+## FAQ
+
+-   **为什么在Tabs中使用 Typography 的省略 ellipsis 失效？**
+
+    因为Tabs渲染TabPane时，默认是全部渲染display: none。此时这些组件无法获取到正确的宽度或高度值。建议1.x的版本开启lazyRender，或者关闭keepDOM。0.x的版本需要使用tabList的写法。
+
+-   **为什么在Tabs中使用Collapse/Collapsible/Resizable Table等组件的高度或宽度值不对？**
+
+    原因同上，另外如果 collapse 不需要动画，也可以通过设置 motion={false} 来关闭动画效果。此时无需获取组件的高度。

@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import { format, parse } from 'date-fns';
 import { toNumber } from 'lodash';
 import { strings } from '../constants';
@@ -15,7 +14,7 @@ import { zhCN as defaultLocale } from 'date-fns/locale';
 export const parseToDate = (input: string | Date | number, formatToken = strings.DEFAULT_FORMAT, dateFnsLocale = defaultLocale) => {
     if (input instanceof Date) {
         return input;
-    } else if (typeof input === 'number' || !isNaN(Number(input))) {
+    } else if (typeof input === 'number') {
         return new Date(toNumber(input));
     } else if (typeof input === 'string') {
         let curDate = new Date();
@@ -26,6 +25,8 @@ export const parseToDate = (input: string | Date | number, formatToken = strings
         // console.log(curDate, formatToken);
 
         return curDate;
+    } else if (typeof input === 'undefined') {
+        return undefined;
     }
 
     return new Date();

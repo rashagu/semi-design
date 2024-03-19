@@ -1,9 +1,15 @@
 import path from 'path';
+import { Compiler as LegacyCompiler } from 'webpack';
+import { Compiler } from 'webpack';
 import { transformPath } from './utils';
-const _NormalModule_ = require('webpack/lib/NormalModule');
 
 export interface WebpackContext {
-    NormalModule?: any;
+    NormalModule?: any
+}
+
+export interface ExtractCssOptions {
+    loader: string;
+    loaderOptions?: any
 }
 export interface SemiWebpackPluginOptions {
     theme?: string | SemiThemeOptions;
@@ -11,11 +17,15 @@ export interface SemiWebpackPluginOptions {
     variables?: {[key: string]: string | number};
     include?: string;
     omitCss?: boolean;
-    webpackContext?: WebpackContext
+    /** @deprecated SemiWebpackPlugin will get webpack context from compiler instance. */
+    webpackContext?: WebpackContext;
+    extractCssOptions?: ExtractCssOptions;
+    overrideStylesheetLoaders?: (loaders: any[]) => any[]
+
 }
 
 export interface SemiThemeOptions {
-    name?: string;
+    name?: string
 }
 
 export default class SemiWebpackPlugin {
@@ -25,8 +35,12 @@ export default class SemiWebpackPlugin {
         this.options = options;
     }
 
-    apply(compiler: any) {
-        const NormalModule = this.options.webpackContext?.NormalModule || _NormalModule_;
+    apply(compiler: Compiler | LegacyCompiler) {
+        let NormalModule = this.options.webpackContext?.NormalModule;
+        if (!NormalModule && 'webpack' in compiler) NormalModule = compiler.webpack.NormalModule;
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        if (!NormalModule) NormalModule = require('webpack/lib/NormalModule');
+
         compiler.hooks.compilation.tap('SemiPlugin', (compilation: any) => {
             if (this.options.theme || this.options.prefixCls || this.options.omitCss) {
                 if (NormalModule.getCompilationHooks) {
@@ -82,12 +96,19 @@ export default class SemiWebpackPlugin {
                 name: this.options.theme
             };
             if (!this.hasSemiThemeLoader(module.loaders)) {
-                module.loaders = [
+                const lastLoader = this.options.extractCssOptions ? {
+                    loader: this.options.extractCssOptions.loader,
+                    options: this.options.extractCssOptions.loaderOptions || {}
+                } : {
+                    loader: styleLoader
+                };
+                const loaderList = [
+                    lastLoader,
                     {
-                        loader: styleLoader
-                    },
-                    {
-                        loader: cssLoader
+                        loader: cssLoader,
+                        options: {
+                            sourceMap: false,
+                        }
                     }, {
                         loader: scssLoader
                     },
@@ -100,6 +121,7 @@ export default class SemiWebpackPlugin {
                             include: this.options.include
                         }
                     }];
+                module.loaders = this.options.overrideStylesheetLoaders?.(loaderList) ?? loaderList;
             }
         }
     }

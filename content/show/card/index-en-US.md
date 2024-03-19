@@ -1,6 +1,6 @@
 ---
 localeCode: en-US
-order: 44
+order: 48
 category: Show
 title:  Card
 subTitle: Card
@@ -73,6 +73,7 @@ function Demo() {
                     title="Semi Doc" 
                     avatar={
                         <Avatar 
+                            alt='Card meta img'
                             size="default"
                             src='https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/card-meta-avatar-docs-demo.jpg'
                         />
@@ -87,7 +88,7 @@ function Demo() {
                         </article>
                     }
                 >
-                    <IconInfoCircle style={{color:'var(--semi-color-primary)'}}/>
+                    <IconInfoCircle style={{ color: 'var(--semi-color-primary)' }}/>
                 </Popover>
             </Card>
         </>
@@ -183,6 +184,7 @@ function Demo() {
                     title="Semi Doc" 
                     avatar={
                         <Avatar 
+                            alt='Card meta img'
                             size="default"
                             src='https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/card-meta-avatar-docs-demo.jpg'
                         />
@@ -197,7 +199,7 @@ function Demo() {
                         </article>
                     }
                 >
-                    <IconInfoCircle style={{color:'var(--semi-color-primary)'}}/>
+                    <IconInfoCircle style={{ color: 'var(--semi-color-primary)' }}/>
                 </Popover>
             </Card>
             <br/>
@@ -214,6 +216,7 @@ function Demo() {
                     title="Semi Doc" 
                     avatar={
                         <Avatar 
+                            alt='Card meta img'
                             size="default"
                             src='https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/card-meta-avatar-docs-demo.jpg'
                         />
@@ -228,7 +231,7 @@ function Demo() {
                         </article>
                     }
                 >
-                    <IconInfoCircle style={{color:'var(--semi-color-primary)'}}/>
+                    <IconInfoCircle style={{ color: 'var(--semi-color-primary)' }}/>
                 </Popover>
             </Card>
         </div>
@@ -258,6 +261,7 @@ function Demo() {
                     description="Easily manage your project icons and easily upload, update and share a series of project icons." 
                     avatar={
                         <Avatar 
+                            alt='Card meta img'
                             size="default"
                             src='https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/card-meta-avatar-docs-demo.jpg'
                         />
@@ -348,7 +352,7 @@ function Demo() {
                 padding: 20
             }}
         >
-            <Row gutter={[16,16]}>
+            <Row gutter={[16, 16]}>
                 <Col span={8}>
                     <Card title='Card Title' bordered={false} >
                         Card Content
@@ -365,7 +369,7 @@ function Demo() {
                     </Card>
                 </Col>
             </Row>
-            <Row gutter={[16,16]}>
+            <Row gutter={[16, 16]}>
                 <Col span={16}>
                     <Card title='Card Title' bordered={false} >
                         Card Content
@@ -439,7 +443,7 @@ function Demo() {
                     <Meta 
                         title={
                             <Skeleton
-                                style={{width:80}}
+                                style={{ width: 80 }}
                                 placeholder={<Title />}
                                 loading={loading}
                             >
@@ -450,7 +454,7 @@ function Demo() {
                         } 
                         description={
                             <Skeleton 
-                                style={{width:150, marginTop: 12}} 
+                                style={{ width: 150, marginTop: 12 }} 
                                 placeholder={<Paragraph rows={1} />} 
                                 loading={loading}
                             >
@@ -462,6 +466,7 @@ function Demo() {
                         avatar={
                             <Skeleton placeholder={<Skeleton.Avatar />} loading={loading}>
                                 <Avatar 
+                                    alt='Card meta img'
                                     size="default"
                                     src='https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/card-meta-avatar-docs-demo.jpg'
                                 />
@@ -470,14 +475,14 @@ function Demo() {
                     />
                 }
                 headerExtraContent={
-                    <Skeleton style={{width: 50}} placeholder={<Paragraph rows={1} />} loading={loading}>
+                    <Skeleton style={{ width: 50 }} placeholder={<Paragraph rows={1} />} loading={loading}>
                         <Typography.Text link>
                             More
                         </Typography.Text>
                     </Skeleton>
                 }
                 cover={ 
-                    <Skeleton style={{maxWidth: '100%', height: 260}} placeholder={<Image />} loading={loading}>
+                    <Skeleton style={{ maxWidth: '100%', height: 260 }} placeholder={<Image />} loading={loading}>
                         <img 
                             alt="example" 
                             src="https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/root-web-sites/card-cover-docs-demo.jpeg" 
@@ -582,19 +587,19 @@ function Demo() {
                 defaultValue={12}
                 max={40}
                 min={10}
-                style={{ width:360 }}
+                style={{ width: 360 }}
                 onChange={v=> setSpacing(v)}
             />
             <br />
             <CardGroup spacing={spacing}>
                 {
-                    new Array(8).fill(null).map((v,idx)=>(
+                    new Array(8).fill(null).map((v, idx)=>(
                         <Card 
                             key={idx}
                             shadows='hover'
                             title='Card title'
                             headerLine={false}
-                            style={{ width:260 }}
+                            style={{ width: 260 }}
                             headerExtraContent={
                                 <Text link>
                                     More
@@ -626,13 +631,13 @@ function Demo() {
     return (
         <CardGroup type='grid'>
             {
-                new Array(7).fill(null).map((v,idx)=>(
+                new Array(7).fill(null).map((v, idx)=>(
                     <Card 
                         key={idx}
                         shadows='hover'
                         title='Card title'
                         headerLine={false}
-                        style={{ width:260 }}
+                        style={{ width: 260 }}
                         headerExtraContent={
                             <Text link>
                                 More
@@ -691,6 +696,29 @@ function Demo() {
 |style      |Meta style            |CSSProperties|-       |1.21.0 |
 |title      |title                 |ReactNode    |-       |1.21.0 |
 
+## Accessibility
+
+- Card supports the input of `aria-label` to indicate the function of the Card
+- When Card loading, `aria-busy` will be turned on
+- Card is a container-type component, and any elements inside the card need to follow their respective accessibility guidelines
+
+## Content Guidelines
+
+- Card title
+  - Card titles should be informative and focus on the most important information
+  - try to limit the title to 1 phrase or segment
+  - Card titles should be written in sentence case
+  - do not end with punctuation marks (except question marks)
+- Text
+  - Actionable: Use imperative sentences instead of "you can" to describe the body, which better tells the user what can be done
+  
+| ✅ Recommended usage | ❌ Deprecated usage |   
+| --- | --- | 
+| Get order progress for details | You can get order progress for details |
+
+- Always say the most important information first
+- Use "Need to" instead of "must"
+
 ## Design Tokens
 <DesignToken/>
 
@@ -699,3 +727,5 @@ function Demo() {
 ```material
 41,55,64,74,219,73,84,99,179
 ``` -->
+## Related Material
+<semi-material-list code="41, 179"></semi-material-list>

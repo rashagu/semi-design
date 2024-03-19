@@ -1,6 +1,6 @@
 ---
 localeCode: en-US
-order: 35
+order: 39
 category: Navigation
 title:  Breadcrumb
 subTitle: Breadcrumb
@@ -131,19 +131,19 @@ import { Breadcrumb, Typography } from '@douyinfe/semi-ui';
             <br/>
             <Text size="small">No truncation</Text>
             <Breadcrumb
-                showTooltip={{width: 'auto'}}
+                showTooltip={{ width: 'auto' }}
                 routes={routes}
             />
             <br/>
             <Text size="small">Ellipsis from middle of text</Text>
             <Breadcrumb
-                showTooltip={{ellipsisPos: 'middle'}}
+                showTooltip={{ ellipsisPos: 'middle' }}
                 routes={routes}
             />
             <br/>
             <Text size="small">Customize tooltip</Text>
             <Breadcrumb
-                showTooltip={{opts: {position: 'topLeft'}}}
+                showTooltip={{ opts: { position: 'topLeft' } }}
                 routes={routes}
             />
         </>
@@ -277,7 +277,7 @@ import { IconHome, IconArticle } from '@douyinfe/semi-icons';
                     },
                     { 
                         path: '/breadcrumb', 
-                        href: '/components/breadcrumb', 
+                        href: '/en-US/navigation/breadcrumb', 
                         name: 'breadcrumb', 
                         icon: <IconArticle />
                     },
@@ -333,6 +333,16 @@ import { IconHome, IconArticle } from '@douyinfe/semi-icons';
 | path       | Routing path      | string | -         |         |
 
 After **v>=1.16.0**, other props in Breadcrumb.Item are also supported correspondingly.
+
+## Accessibility
+
+- Breadcrumb supports the `aria-label` props to indicate the function of the Breadcrumb
+- Breadcrumb will set `aria-current='page'` for the current item
+
+## Content Guidelines
+
+- Each page link should be short and clearly reflect the location or entity it links to
+- Write in sentence case
 
 ## Design Tokens
 <DesignToken/>

@@ -1,6 +1,6 @@
 ---
 localeCode: en-US
-order: 10
+order: 14
 category: Basic
 title: Icon
 subTitle: Icon
@@ -54,7 +54,7 @@ import { IconHome, IconEmoji, IconSpin } from '@douyinfe/semi-icons';
 You can change the `font-size` to change the icon size
 >
 
-The Icon component encapsulates the size attribute, which makes it easier to define the icon size. It supports `extra-small` (8x8), `small` (12x12), `default` (16x16), `large` (20x20), `extra-large `(24x24).
+The Icon component encapsulates the size attribute, which makes it easier to define the icon size. It supports `extra-small` (8x8), `small` (12x12), `default` (16x16), `large` (20x20), `extra-large `(24x24), When size is specified as `inherit`, the icon size inherits the current context font size.
 
 
 ```jsx live=true
@@ -66,7 +66,7 @@ import { IconSearch, IconHelpCircle, IconAlertCircle, IconMinusCircle, IconPlusC
     const types = [<IconSearch />, <IconHelpCircle />, <IconAlertCircle />, <IconMinusCircle />, <IconPlusCircle />, <IconPlus />, <IconRefresh />];
     const sizes = ['extra-small', 'small', 'default', 'large', 'extra-large'];
     let icons = types.map((type, i) => {
-        return <div key={i} style={{ marginBottom: 4 }}>{sizes.map(size => React.cloneElement(type, {size, key:size}))}</div>;
+        return <div key={i} style={{ marginBottom: 4 }}>{sizes.map(size => React.cloneElement(type, { size, key: size }))}</div>;
     });
     return icons;
 };
@@ -82,14 +82,14 @@ import { IconLikeHeart, IconFlag, IconLock, IconUnlock } from '@douyinfe/semi-ic
 
 () => (
     <div>
-        <div style={{color:'#E91E63'}} >
+        <div style={{ color: '#E91E63' }} >
             <IconLikeHeart size="extra-large"/>
             <IconFlag size="extra-large"/>
         </div>
         <br/>
         <div>
-            <IconLock style={{color:'#6A3AC7'}} size="extra-large" />
-            <IconUnlock style={{color:'#9C27B0'}} size="extra-large"/>
+            <IconLock style={{ color: '#6A3AC7' }} size="extra-large" />
+            <IconUnlock style={{ color: '#9C27B0' }} size="extra-large"/>
         </div>
     </div>
 );
@@ -97,17 +97,17 @@ import { IconLikeHeart, IconFlag, IconLock, IconUnlock } from '@douyinfe/semi-ic
 
 ### Custom icon
 You can use custom icons to pass in Icon components
-Icon component supports size, rotate, spinning and other attributes
+Icon component supports size, rotate, spin and other attributes
 
 ```jsx live=true
 import React from 'react';
 import { Icon } from '@douyinfe/semi-ui';
 
 () => {
-    function CustomIcon(){
-        return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    function CustomIcon() {
+        return <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="12" cy="12" r="11" fill="#FBCD2C"/>
-            <mask id="mask0" maskType="alpha" maskUnits="userSpaceOnUse" x="1" y="1" width="22" height="22">
+            <mask id="mask0" masktype="alpha" maskUnits="userSpaceOnUse" x="1" y="1" width="22" height="22">
                 <circle cx="12" cy="12" r="11" fill="#A2845E"/>
             </mask>
             <g mask="url(#mask0)">
@@ -156,7 +156,22 @@ import StarIcon from './star.svg';
 | onMouseMove | Callback event of moving the mouse >=v1.21 | (e: Event) => void | None |
 | onMouseUp | Callback event when the mouse button is raised >=v1.21 | (e: Event) => void | None |
 | rotate | degree of rotation | number | |
-| size | Size, supports `extra-small`, `small`, `default`, `large`, `extra-large` | string | `default` |
+| size | Size, supports `inherit`, `extra-small`, `small`, `default`, `large`, `extra-large` | string | `default` |
 | spin | spin animation | boolean | |
 | style | Icon style | CSSProperties | None |
 | svg | Icon content | ReactNode | None |
+
+## Accessibility
+
+### ARIA
+
+- The Icon component role is img, and its aria-label defaults to the component's file name
+
+```jsx live=true
+import React from 'react';
+import { IconHome } from '@douyinfe/semi-icons';
+
+() => <IconHome aria-label="back to homepage" />;
+```
+
+- The svg element inside Icon is a decorative element, and aria-hidden is set by default to prevent it from being read by screen readers

@@ -1,10 +1,10 @@
-/* eslint-disable react/destructuring-assignment */
-import React, { PureComponent } from 'react';
+import React, { PureComponent, ReactNode } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { cssClasses, strings } from '@douyinfe/semi-foundation/button/constants';
 import '@douyinfe/semi-foundation/button/button.scss';
 import { noop } from '@douyinfe/semi-foundation/utils/function';
+import { omit } from 'lodash';
 
 const btnSizes = strings.sizes;
 const { htmlTypes, btnTypes } = strings;
@@ -14,9 +14,11 @@ export type Size = 'default' | 'small' | 'large';
 export type Theme = 'solid' | 'borderless' | 'light';
 export type Type = 'primary' | 'secondary' | 'tertiary' | 'warning' | 'danger';
 
-export interface ButtonProps {
+export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'type'>{
+    id?: string;
     block?: boolean;
     circle?: boolean;
+    children?: ReactNode;
     disabled?: boolean;
     className?: string;
     icon?: React.ReactNode;
@@ -32,6 +34,7 @@ export interface ButtonProps {
     onMouseDown?: React.MouseEventHandler<HTMLButtonElement>;
     onMouseEnter?: React.MouseEventHandler<HTMLButtonElement>;
     onMouseLeave?: React.MouseEventHandler<HTMLButtonElement>;
+    'aria-label'?: React.AriaAttributes['aria-label']
 }
 
 // TODO: icon configuration
@@ -67,6 +70,7 @@ export default class Button extends PureComponent<ButtonProps> {
         className: PropTypes.string,
         onMouseEnter: PropTypes.func,
         onMouseLeave: PropTypes.func,
+        'aria-label': PropTypes.string,
     };
 
     render() {
@@ -89,7 +93,7 @@ export default class Button extends PureComponent<ButtonProps> {
 
         const baseProps = {
             disabled,
-            ...attr,
+            ...omit(attr, ['x-semi-children-alias']),
             className: classNames(
                 prefixCls,
                 {
@@ -102,21 +106,23 @@ export default class Button extends PureComponent<ButtonProps> {
                     [`${prefixCls}-block`]: block,
                     [`${prefixCls}-circle`]: circle,
                     [`${prefixCls}-borderless`]: theme === 'borderless',
+                    [`${prefixCls}-${type}-disabled`]: disabled && type,
                 },
                 className
             ),
             type: htmlType,
+            'aria-disabled': disabled,
         };
 
+        const xSemiProps = {};
+
+        if (!(className && className.includes('-with-icon'))) {
+            xSemiProps['x-semi-prop'] = this.props['x-semi-children-alias'] || 'children';
+        }
+
         return (
-            // eslint-disable-next-line react/button-has-type
-            <button
-                {...baseProps}
-                onClick={this.props.onClick}
-                onMouseDown={this.props.onMouseDown}
-                style={style}
-            >
-                <span className={`${prefixCls}-content`} onClick={e => disabled && e.stopPropagation()}>
+            <button {...baseProps} onClick={this.props.onClick} onMouseDown={this.props.onMouseDown} style={style}>
+                <span className={`${prefixCls}-content`} onClick={e => disabled && e.stopPropagation()} {...xSemiProps}>
                     {children}
                 </span>
             </button>

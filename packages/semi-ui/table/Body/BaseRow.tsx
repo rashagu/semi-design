@@ -1,5 +1,3 @@
-/* eslint-disable max-len */
-/* eslint-disable eqeqeq */
 import React, { createRef, ReactNode } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
@@ -63,49 +61,57 @@ export interface BaseRowProps {
     style?: React.CSSProperties;
     virtualized?: Virtualized;
     visible: boolean; // required
+    /** whether display none */
+    displayNone?: boolean
 }
 
+/**
+ * avoid affected by https://www.npmjs.com/package/babel-plugin-transform-react-remove-prop-types
+ */
+export const baseRowPropTypes = {
+    anyColumnFixed: PropTypes.bool,
+    cellWidths: PropTypes.array.isRequired,
+    className: PropTypes.string,
+    columns: PropTypes.array.isRequired,
+    components: PropTypes.object.isRequired,
+    disabled: PropTypes.bool,
+    expandIcon: PropTypes.oneOfType([PropTypes.bool, PropTypes.func, PropTypes.node]),
+    expandableRow: PropTypes.bool,
+    expanded: PropTypes.bool,
+    displayNone: PropTypes.bool,
+    expandedRow: PropTypes.bool,
+    fixed: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
+    height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    hideExpandedColumn: PropTypes.bool,
+    hovered: PropTypes.bool.isRequired,
+    indent: PropTypes.number,
+    indentSize: PropTypes.number,
+    index: PropTypes.number,
+    isSection: PropTypes.bool,
+    level: PropTypes.number,
+    onDidUpdate: PropTypes.func,
+    onHover: PropTypes.func,
+    onRow: PropTypes.func,
+    onRowClick: PropTypes.func,
+    onRowContextMenu: PropTypes.func,
+    onRowDoubleClick: PropTypes.func,
+    onRowMouseEnter: PropTypes.func,
+    onRowMouseLeave: PropTypes.func,
+    prefixCls: PropTypes.string,
+    record: PropTypes.object,
+    renderExpandIcon: PropTypes.func,
+    replaceClassName: PropTypes.string,
+    rowExpandable: PropTypes.func,
+    rowKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired, // real key of the row
+    selected: PropTypes.bool,
+    store: PropTypes.object,
+    style: PropTypes.object,
+    virtualized: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
+    visible: PropTypes.bool.isRequired,
+};
+
 export default class TableRow extends BaseComponent<BaseRowProps, Record<string, any>> {
-    static propTypes = {
-        anyColumnFixed: PropTypes.bool,
-        cellWidths: PropTypes.array.isRequired,
-        className: PropTypes.string,
-        columns: PropTypes.array.isRequired,
-        components: PropTypes.object.isRequired,
-        disabled: PropTypes.bool,
-        expandIcon: PropTypes.oneOfType([PropTypes.bool, PropTypes.func, PropTypes.node]),
-        expandableRow: PropTypes.bool,
-        expanded: PropTypes.bool,
-        expandedRow: PropTypes.bool,
-        fixed: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-        height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-        hideExpandedColumn: PropTypes.bool,
-        hovered: PropTypes.bool.isRequired,
-        indent: PropTypes.number,
-        indentSize: PropTypes.number,
-        index: PropTypes.number,
-        isSection: PropTypes.bool,
-        level: PropTypes.number,
-        onDidUpdate: PropTypes.func,
-        onHover: PropTypes.func,
-        onRow: PropTypes.func,
-        onRowClick: PropTypes.func,
-        onRowContextMenu: PropTypes.func,
-        onRowDoubleClick: PropTypes.func,
-        onRowMouseEnter: PropTypes.func,
-        onRowMouseLeave: PropTypes.func,
-        prefixCls: PropTypes.string,
-        record: PropTypes.object,
-        renderExpandIcon: PropTypes.func,
-        replaceClassName: PropTypes.string,
-        rowExpandable: PropTypes.func,
-        rowKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired, // real key of the row
-        selected: PropTypes.bool,
-        store: PropTypes.object,
-        style: PropTypes.object,
-        virtualized: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
-        visible: PropTypes.bool.isRequired,
-    };
+    static propTypes = baseRowPropTypes;
 
     static defaultProps = {
         columns: [] as [],
@@ -151,6 +157,21 @@ export default class TableRow extends BaseComponent<BaseRowProps, Record<string,
         super(props);
         this.ref = createRef();
         this.foundation = new TableRowFoundation(this.adapter);
+    }
+
+    componentDidMount() {
+        // fix #745
+        // didmount/willUnmount may be called twice when React.StrictMode is true in React 18, we need to ensure that this.cache.customRowProps is correct
+        const {
+            onRow,
+            index,
+            record,
+        } = this.props;
+        const customRowProps = this.adapter.getCache('customRowProps');
+        if (typeof customRowProps === 'undefined') {
+            const { className: customClassName, style: customStyle, ...rowProps } = onRow(record, index) || {};
+            this.adapter.setCache('customRowProps', { ...rowProps });
+        }
     }
 
     shouldComponentUpdate(nextProps: BaseRowProps) {
@@ -231,14 +252,14 @@ export default class TableRow extends BaseComponent<BaseRowProps, Record<string,
                 if (level != null && columnIndex === firstIndex) {
                     expandableProps.indent = level;
 
-                    if (!expandableRow) {
+                    if (!expandableRow && hideExpandedColumn) {
                         expandableProps.indent = level + 1;
                     }
                 }
             }
 
             if (isExpandedColumn(column) && !displayExpandedColumn) {
-                cells.push(<TableCell key={columnIndex} isSection={isSection} />);
+                cells.push(<TableCell key={columnIndex} colIndex={columnIndex} isSection={isSection} />);
             } else if (!isScrollbarColumn(column)) {
                 const diyProps: { width?: number } = {};
 
@@ -248,6 +269,7 @@ export default class TableRow extends BaseComponent<BaseRowProps, Record<string,
 
                 cells.push(
                     <TableCell
+                        colIndex={columnIndex}
                         {...expandableProps}
                         {...diyProps}
                         hideExpandedColumn={hideExpandedColumn}
@@ -280,7 +302,7 @@ export default class TableRow extends BaseComponent<BaseRowProps, Record<string,
 
         const customRowProps = this.adapter.getCache('customRowProps');
 
-        if (typeof customRowProps.onMouseEnter === 'function') {
+        if (typeof customRowProps?.onMouseEnter === 'function') {
             customRowProps.onMouseEnter(e);
         }
     };
@@ -290,7 +312,7 @@ export default class TableRow extends BaseComponent<BaseRowProps, Record<string,
 
         const customRowProps = this.adapter.getCache('customRowProps');
 
-        if (typeof customRowProps.onMouseLeave === 'function') {
+        if (typeof customRowProps?.onMouseLeave === 'function') {
             customRowProps.onMouseLeave(e);
         }
     };
@@ -318,6 +340,11 @@ export default class TableRow extends BaseComponent<BaseRowProps, Record<string,
             record,
             hovered,
             expanded,
+            displayNone,
+            expandableRow,
+            level,
+            expandedRow,
+            isSection
         } = this.props;
 
         const BodyRow: any = components.body.row;
@@ -338,12 +365,32 @@ export default class TableRow extends BaseComponent<BaseRowProps, Record<string,
                         [`${prefixCls}-row-selected`]: selected,
                         [`${prefixCls}-row-expanded`]: expanded,
                         [`${prefixCls}-row-hovered`]: hovered,
+                        [`${prefixCls}-row-hidden`]: displayNone,
                     },
                     customClassName
                 );
+        const ariaProps = {};
+        if (typeof index === 'number') {
+            ariaProps['aria-rowindex'] = index + 1;
+        }
+        if (expandableRow) {
+            ariaProps['aria-expanded'] = expanded;
+        }
+        // if row is expandedRow, set it's level to 2 
+        if (expanded || expandedRow) {
+            ariaProps['aria-level'] = 2;
+        }
+        if (typeof level === 'number') {
+            ariaProps['aria-level'] = level + 1;
+        }
+        if (isSection) {
+            ariaProps['aria-level'] = 1;
+        }
 
         return (
             <BodyRow
+                role="row"
+                {...ariaProps}
                 {...rowProps}
                 style={baseRowStyle}
                 className={rowCls}

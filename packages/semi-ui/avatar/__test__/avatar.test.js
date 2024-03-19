@@ -261,7 +261,7 @@ describe('Avatar', () => {
     it('src', () => {
         const element = (
            <Avatar
-                src="https://sf6-cdn-tos.douyinstatic.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/root-web-sites/avatarDemo.jpeg"
+                src="https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/root-web-sites/dy.png"
                 style={{ margin: 4 }}
             />
         );
@@ -272,7 +272,7 @@ describe('Avatar', () => {
                 .at(0)
                 .props()
                 .src
-        ).toEqual('https://sf6-cdn-tos.douyinstatic.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/root-web-sites/avatarDemo.jpeg');
+        ).toEqual('https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/root-web-sites/dy.png');
     });
 
     it('shape', () => {
@@ -314,13 +314,21 @@ describe('Avatar', () => {
         expect(wrapper.find('.test-avatar').at(0)).toHaveStyle('color', 'red');
     });
 
+    it('gap & scale', () => {
+        const gap = 10
+        const wrapper = mount(<Avatar gap={gap}>Semi</Avatar>);
+        expect(wrapper.find(`.${avartarPrefix}-content`).at(0)).toHaveStyle({
+            'transform': expect.stringMatching(/scale\((1|0\.\d+)\)/)
+        })
+    })
+
     it('onError', () => {
         const onError = () => {};
         const spyOnError = sinon.spy(onError); 
         const avatar = mount(
             <Avatar 
                 onError={spyOnError}
-                src="https://sf6-cdn-tos.douyinstatic.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/root-web-sites/avatarDemo.jpeg"
+                src="https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/root-web-sites/dy.png"
             />
         );
         avatar

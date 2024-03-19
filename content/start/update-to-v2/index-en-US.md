@@ -3,7 +3,7 @@ category: Getting Started
 title:  From 1.x to 2.0
 icon: doc-updateV2
 localeCode: en-US
-order: 6
+order: 11
 ---
 
 ## Start upgrade
@@ -164,8 +164,11 @@ import en_GB from '@douyinfe/semi-ui/lib/es/locale/source/en_GB'
   - Custom svg no longer supports plug-in configuration srcSvgPaths
   - The Button `icon` and `iconType` property no longer supports passing built-in icon names through strings
   - Dropdown deletes the iconType attribute and unifies it into the icon attribute
-  - Navigation icons no longer support incoming by string, ReactNode needs to be passed in
-  - Notification icons are no longer passed in by string, please use ReactNode uniformly
+  - Navigation `icon` no longer support incoming by string, ReactNode needs to be passed in
+  - Notification `icon` are no longer passed in by string, please use ReactNode uniformly
+  - Banner `icon`、`closeIcon` are no longer passed in by string, please use ReactNode uniformly
+  - Typography.Text `icon` are no longer passed in by string, please use ReactNode uniformly
+  - Breadcrumb.Item `icon` are no longer passed in by string, please use ReactNode uniformly
 - AutoComplete officially discards the onChangeWithObject property
 - Remove onInputChange from Cascader triggerRender
 - Form no longer exports Label components from `semi-ui/index.js`
@@ -184,6 +187,7 @@ import en_GB from '@douyinfe/semi-ui/lib/es/locale/source/en_GB'
   - Users who use Semi CSS Variable to implement features such as dark mode need to update the variables in custom CSS uniformly
   - Users who do not use Semi CSS Variable in custom components or pages need not pay attention and are not affected
 - In 2.x, the unified set the width and height of the illustration to `200 * 200px`. If you want to simulate the width and height of 1.x, you can set style = {{width: 300, height: 150}} to the illustration.
+- The common className of the Icon component is changed from `semi-icons` to `semi-icon`, aligning component names
 ### Plugin adjustment
 If you use Semi plug-ins, such as `@ies/semi-ui-plugin-webpack` or `@ies/semi-ui-plugin-eden` etc. to achieve some advanced configuration, you need to understand the following changes:
 
@@ -243,7 +247,7 @@ import { IllustrationConstruction } from '@douyinfe/semi-illustrations';
 In 1.x, Semi uses source code publishing. It will not perform precompilation before performing npm publishing. The Scss and jsx/js of the component library will be compiled together with the business code. In 2.0, precompilation was performed before npm publishing. For ordinary users, precompilation can make Semi work out of the box: there is no need for users to compile Semi source files, and there is no need to introduce Semi plug-ins when using them. Since the compiled results are under lib/es, the reference path of the interface and language package has changed, but for component references, you do not need to change the original reference path (because package.json main attribute points to lib/es/index.js).
 
 ### The project wants to upgrade to 2.0, but the Semi material is used in the project. The material is based on 1.x Semi. Can it be used at the same time?
-Since Semi 2.0 does not have the same package name as 1.x, they will actually be two separate packages that do not affect each other.
+No, the css class name of semi2.x is the same as that of semi1.x, and using it at the same time will cause style conflicts. If you encounter similar problems, please initiate an oncall in the Feishu group, and there will be a dedicated person to deal with it.
 
 ### Why do CSS variables add semi prefixes?
 Due to the increasing number of business micro front-end application scenarios, in order to avoid naming conflicts with other library CSS variables and avoid the problem of mutual influence of styles.

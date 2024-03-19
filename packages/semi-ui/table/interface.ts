@@ -1,14 +1,12 @@
-/* eslint-disable max-len */
 import React, { ReactNode, MutableRefObject } from 'react';
 
-import { BaseProps } from '../_base/baseComponent';
-import { PaginationProps } from '../pagination';
-import { CheckboxProps } from '../checkbox';
-import { DropdownProps } from '../dropdown';
-import { Locale } from '../locale/interface';
-import { ArrayElement } from '../_base/base';
+import type { BaseProps } from '../_base/baseComponent';
+import type { PaginationProps } from '../pagination';
+import type { CheckboxProps } from '../checkbox';
+import type { Locale } from '../locale/interface';
+import type { ArrayElement } from '../_base/base';
 import { strings } from '@douyinfe/semi-foundation/table/constants';
-import {
+import type {
     BaseRowKeyType,
     BaseSortOrder,
     BaseGroupBy,
@@ -19,9 +17,11 @@ import {
     BaseSorter,
     BaseFilter,
     BaseChangeInfoFilter,
-    BaseIncludeGroupRecord
+    BaseIncludeGroupRecord,
+    BaseEllipsis
 } from '@douyinfe/semi-foundation/table/foundation';
-import { ScrollDirection, CSSDirection } from 'react-window';
+import type { ScrollDirection, CSSDirection } from 'react-window';
+import type { ColumnFilterProps } from './ColumnFilter';
 
 export interface TableProps<RecordType extends Record<string, any> = any> extends BaseProps {
     bordered?: boolean;
@@ -49,6 +49,7 @@ export interface TableProps<RecordType extends Record<string, any> = any> extend
     hideExpandedColumn?: boolean;
     id?: string;
     indentSize?: number;
+    keepDOM?: boolean;
     loading?: boolean;
     pagination?: TablePagination;
     prefixCls?: string;
@@ -70,6 +71,8 @@ export interface TableProps<RecordType extends Record<string, any> = any> extend
     onGroupedRow?: OnGroupedRow<RecordType>;
     onHeaderRow?: OnHeaderRow<RecordType>;
     onRow?: OnRow<RecordType>;
+    sticky?: Sticky;
+    direction?: Direction
 }
 
 export interface ColumnProps<RecordType extends Record<string, any> = any> {
@@ -78,45 +81,58 @@ export interface ColumnProps<RecordType extends Record<string, any> = any> {
     children?: Array<ColumnProps<RecordType>>;
     className?: string;
     colSpan?: number;
+    /** use `dataIndex` to get current column data item from record. If you use `sorter` or `onFilter`, a unique `dataIndex` is required  */
     dataIndex?: string;
+    defaultFilteredValue?: any[];
     defaultSortOrder?: SortOrder;
     filterChildrenRecord?: boolean;
-    filterDropdown?: React.ReactNode;
-    filterDropdownProps?: DropdownProps;
+    filterDropdown?: ColumnFilterProps['filterDropdown'];
+    /** render filter Dropdown panel content  */
+    renderFilterDropdown?: ColumnFilterProps['renderFilterDropdown'];
+    /** filter Dropdown props  */
+    filterDropdownProps?: ColumnFilterProps['filterDropdownProps'];
     filterDropdownVisible?: boolean;
     filterIcon?: FilterIcon;
     filterMultiple?: boolean;
     filteredValue?: any[];
+    /** `filters` is not required if you use `renderFilterDropdown`  */
     filters?: Filter[];
     fixed?: Fixed;
+    /** the key required by React. If you have already set the `dataIndex`, the key does not need to be set again.  */
     key?: string | number;
     render?: ColumnRender<RecordType>;
     renderFilterDropdownItem?: RenderFilterDropdownItem;
     sortChildrenRecord?: boolean;
     sortOrder?: SortOrder;
+    /** enable sorting, `dataIndex` is required at the same time  */
     sorter?: Sorter<RecordType>;
+    sortIcon?: SortIcon;
     title?: ColumnTitle;
     useFullRender?: boolean;
     width?: string | number;
     onCell?: OnCell<RecordType>;
+    /** enable filtering, `dataIndex` is required at the same time  */
     onFilter?: OnFilter<RecordType>;
     onFilterDropdownVisibleChange?: OnFilterDropdownVisibleChange;
     onHeaderCell?: OnHeaderCell<RecordType>;
+    ellipsis?: BaseEllipsis;
+    resize?: boolean
 }
 
 export type Align = BaseAlign;
 export type SortOrder = BaseSortOrder;
+export type SortIcon = (props: { sortOrder: SortOrder }) => ReactNode;
 export type FilterIcon = boolean | React.ReactNode | FilterIconRenderFunction;
 export interface Filter extends BaseFilter {
     value?: any;
     text?: React.ReactNode;
-    children?: Filter[];
+    children?: Filter[]
 }
 export type Fixed = BaseFixed;
 export type OnCell<RecordType> = (record?: RecordType, rowIndex?: number) => OnCellReturnObject;
 export type OnFilter<RecordType> = (filteredValue?: any, record?: RecordType) => boolean;
 export type OnFilterDropdownVisibleChange = (visible?: boolean) => void;
-export type OnHeaderCell<RecordType> = (record?: RecordType, columnIndex?: number) => OnHeaderCellReturnObject;
+export type OnHeaderCell<RecordType> = (record?: RecordType, columnIndex?: number, index?: number) => OnHeaderCellReturnObject;
 export type ColumnRender<RecordType> = (text: any, record: RecordType, index: number, options?: RenderOptions) => ColumnRenderReturnType;
 export type RenderFilterDropdownItem = (itemInfo?: FilterDropdownItem) => ReactNode;
 export type Sorter<RecordType> = BaseSorter<RecordType>;
@@ -125,7 +141,7 @@ export type FilterIconRenderFunction = (filtered: boolean) => React.ReactNode;
 export type ColumnTitleProps = {
     sorter?: React.ReactNode;
     filter?: React.ReactNode;
-    selection?: React.ReactNode;
+    selection?: React.ReactNode
 };
 export type ColumnRenderReturnType = React.ReactNode | RenderReturnObject;
 export interface RenderReturnObject {
@@ -134,8 +150,8 @@ export interface RenderReturnObject {
     props: {
         [x: string]: any;
         colSpan?: number;
-        rowSpan?: number;
-    };
+        rowSpan?: number
+    }
 }
 export interface FilterDropdownItem {
     [x: string]: any;
@@ -144,50 +160,52 @@ export interface FilterDropdownItem {
     onChange?: React.MouseEventHandler<HTMLLIElement>;
     level?: number;
     filterMultiple?: boolean;
-    checked?: boolean;
+    checked?: boolean
 }
 export interface RenderOptions {
     expandIcon?: React.ReactNode;
+    selection?: React.ReactNode;
+    indentText?: React.ReactNode
 }
 export interface OnCellReturnObject extends React.TdHTMLAttributes<HTMLElement> {
     [x: string]: any;
     style?: React.CSSProperties;
     className?: string;
-    onClick?: (e: React.MouseEvent) => void;
+    onClick?: (e: React.MouseEvent) => void
 }
 export interface OnHeaderCellReturnObject extends React.ThHTMLAttributes<HTMLElement> {
     [x: string]: any;
     style?: React.CSSProperties;
     className?: string;
-    onClick?: (e: React.MouseEvent) => void;
+    onClick?: (e: React.MouseEvent) => void
 }
 
 interface OnRowReturnOmit {
-    ref?: React.RefObject<any>;
+    ref?: React.RefObject<any>
 }
 
 export interface OnRowReturnObject extends Omit<React.DetailedHTMLProps<React.HTMLAttributes<HTMLTableRowElement>, HTMLTableRowElement>, keyof OnRowReturnOmit> {
     [x: string]: any;
     className?: string;
     style?: React.CSSProperties;
-    onClick?: (e: React.MouseEvent) => void;
+    onClick?: (e: React.MouseEvent) => void
 }
 export interface OnGroupedRowReturnObject extends Omit<React.HTMLAttributes<HTMLTableRowElement>, 'className'> {
     [x: string]: any;
     style?: React.CSSProperties;
-    onClick?: (e: React.MouseEvent) => void;
+    onClick?: (e: React.MouseEvent) => void
 }
 export type OnHeaderRowReturnObject = Omit<React.HTMLAttributes<HTMLTableRowElement>, 'ref' | 'style'>;
 
 export interface Scroll {
     x?: number | string;
     y?: number | string;
-    scrollToFirstRowOnChange?: boolean;
+    scrollToFirstRowOnChange?: boolean
 }
 
 export interface Data {
     [x: string]: any;
-    key?: string | number;
+    key?: string | number
 }
 
 export interface TableComponents {
@@ -196,7 +214,7 @@ export interface TableComponents {
         outer?: ReactNode;
         wrapper?: ReactNode;
         row?: ReactNode;
-        cell?: ReactNode;
+        cell?: ReactNode
     };
     body?: {
         outer?: ReactNode;
@@ -205,15 +223,15 @@ export interface TableComponents {
         cell?: ReactNode;
         colgroup?: {
             wrapper?: ReactNode;
-            col?: ReactNode;
-        };
+            col?: ReactNode
+        }
     };
     footer?: {
         wrapper?: ReactNode;
         row?: ReactNode;
         cell?: ReactNode;
-        outer?: ReactNode;
-    };
+        outer?: ReactNode
+    }
 }
 
 export interface RowSelectionProps<RecordType> {
@@ -228,8 +246,20 @@ export interface RowSelectionProps<RecordType> {
     onChange?: RowSelectionOnChange<RecordType>;
     onSelect?: RowSelectionOnSelect<RecordType>;
     onSelectAll?: RowSelectionOnSelectAll<RecordType>;
+    renderCell?: RowSelectionRenderCell<RecordType>
 }
 
+export type RowSelectionRenderCell<RecordType> = (renderCellArgs: {
+    selected: boolean;
+    record: RecordType;
+    originNode: JSX.Element;
+    inHeader: boolean;
+    disabled: boolean;
+    indeterminate: boolean;
+    index?: number;
+    selectRow?: (selected: boolean, e: Event) => void;
+    selectAll?: (selected: boolean, e: Event) => void
+}) => ReactNode;
 export type GetCheckboxProps<RecordType> = (record: RecordType) => CheckboxProps;
 export type RowSelectionOnChange<RecordType> = (selectedRowKeys?: (string | number)[], selectedRows?: RecordType[]) => void;
 export type RowSelectionOnSelect<RecordType> = (
@@ -239,7 +269,7 @@ export type RowSelectionOnSelect<RecordType> = (
     nativeEvent?: React.MouseEvent
 ) => void;
 export type RowSelectionOnSelectAll<RecordType> = (selected?: boolean, selectedRows?: RecordType[], changedRows?: RecordType[]) => void;
-export type ExpandIcon = ((expanded?: boolean) => React.ReactNode) | React.ReactNode | boolean;
+export type ExpandIcon = ((expanded?: boolean) => React.ReactNode) | React.ReactNode;
 export type ExpandedRowRender<RecordType> = (record?: RecordType, index?: number, expanded?: boolean) => React.ReactNode;
 export type Footer<RecordType> = ReactNode | ((pageData?: RecordType[]) => React.ReactNode);
 export type FormatPageText = ((pageInfo?: { currentStart?: number; currentEnd?: number; total?: number }) => React.ReactNode) | boolean;
@@ -253,14 +283,14 @@ export type Pagination = TablePaginationProps | boolean;
 export type TablePagination = Pagination;
 export interface ChangeInfoFilter<RecordType> extends BaseChangeInfoFilter<RecordType> {
     filters?: Filter[];
-    onFilter?: OnFilter<RecordType>;
+    onFilter?: OnFilter<RecordType>
 }
 export type ChangeInfoSorter<RecordType> = BaseChangeInfoSorter<RecordType>;
 export interface ChangeInfo<RecordType> {
     pagination?: TablePaginationProps;
     filters?: ChangeInfoFilter<RecordType>[];
     sorter?: ChangeInfoSorter<RecordType>;
-    extra?: Record<string, any>;
+    extra?: Record<string, any>
 }
 export type OnChange<RecordType> = (changeInfo: ChangeInfo<RecordType>) => void;
 export type OnRow<RecordType> = (record?: RecordType, index?: number) => OnRowReturnObject;
@@ -270,7 +300,7 @@ export type OnExpandedRowsChange<RecordType> = (expandedRows?: IncludeGroupRecor
 export type OnExpand<RecordType> = (expanded?: boolean, record?: IncludeGroupRecord<RecordType>, mouseEvent?: React.MouseEvent) => void;
 export type RenderGroupSection = (groupKey?: string | number, group?: (string | number)[]) => ReactNode | {
     [x: string]: any;
-    children: ReactNode;
+    children: ReactNode
 };
 export type RenderPagination = (paginationProps: TablePaginationProps) => ReactNode;
 export type RowExpandable<RecordType> = (record?: RecordType) => boolean;
@@ -280,37 +310,42 @@ export type RowSelection<RecordType> = RowSelectionProps<RecordType> | boolean;
 export type VirtualizedOnScrollArgs = {
     scrollDirection?: ScrollDirection;
     scrollOffset?: number;
-    scrollUpdateWasRequested?: boolean;
+    scrollUpdateWasRequested?: boolean
+};
+
+export type VirtualizeItemSizeRow = { 
+    sectionRow?: boolean; 
+    expandedRow?: boolean
 };
 export type VirtualizedMode = 'list' | 'grid';
-export type VirtualizedItemSizeFn = (index?: number) => number;
+export type VirtualizedItemSizeFn = (index?: number, row?: VirtualizeItemSizeRow) => number;
 export type VirtualizedItemSize = number | VirtualizedItemSizeFn;
 export type VirtualizedOnScroll = (object: VirtualizedOnScrollArgs) => void;
 export interface VirtualizedProps {
     [x: string]: any;
     mode?: VirtualizedMode;
     itemSize?: VirtualizedItemSize;
-    onScroll?: VirtualizedOnScroll;
+    onScroll?: VirtualizedOnScroll
 }
 export type Virtualized = boolean | VirtualizedProps;
 
 export interface TablePaginationProps extends BaseProps, PaginationProps {
     position?: PaginationPosition;
-    formatPageText?: FormatPageText;
+    formatPageText?: FormatPageText
 }
 
 export type Resizable<RecordType> = ResizableProps<RecordType> | boolean;
 export interface ResizableProps<RecordType> {
     onResize?: ResizeFn<RecordType>;
     onResizeStart?: ResizeFn<RecordType>;
-    onResizeStop?: ResizeFn<RecordType>;
+    onResizeStop?: ResizeFn<RecordType>
 }
 export type ResizeFn<RecordType> = (column: RecordType) => RecordType;
 
 export interface BodyScrollEvent extends React.UIEvent {
     [x: string]: any;
     currentTarget: any;
-    target: any;
+    target: any
 }
 
 export type BodyScrollPosition = 'both' | 'middle' | 'left' | 'right';
@@ -318,3 +353,6 @@ export type BodyScrollPosition = 'both' | 'middle' | 'left' | 'right';
 export type TableLocale = Locale['Table'];
 export type Direction = CSSDirection;
 export type IncludeGroupRecord<RecordType> = BaseIncludeGroupRecord<RecordType>;
+export type Sticky = boolean | {
+    top?: number
+}

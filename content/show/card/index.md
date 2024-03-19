@@ -1,6 +1,6 @@
 ---
 localeCode: zh-CN
-order: 44
+order: 48
 category: 展示类
 title:  Card 卡片
 subTitle: 卡片
@@ -73,6 +73,7 @@ function Demo() {
                     title="Semi Doc" 
                     avatar={
                         <Avatar 
+                            alt='Card meta img'
                             size="default"
                             src='https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/card-meta-avatar-docs-demo.jpg'
                         />
@@ -87,7 +88,7 @@ function Demo() {
                         </article>
                     }
                 >
-                    <IconInfoCircle style={{color:'var(--semi-color-primary)'}}/>
+                    <IconInfoCircle style={{ color: 'var(--semi-color-primary)' }}/>
                 </Popover>
             </Card>
         </>
@@ -183,6 +184,7 @@ function Demo() {
                     title="Semi Doc" 
                     avatar={
                         <Avatar 
+                            alt='Card meta img'
                             size="default"
                             src='https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/card-meta-avatar-docs-demo.jpg'
                         />
@@ -197,7 +199,7 @@ function Demo() {
                         </article>
                     }
                 >
-                    <IconInfoCircle style={{color:'var(--semi-color-primary)'}}/>
+                    <IconInfoCircle style={{ color: 'var(--semi-color-primary)' }}/>
                 </Popover>
             </Card>
             <br/>
@@ -214,6 +216,7 @@ function Demo() {
                     title="Semi Doc" 
                     avatar={
                         <Avatar 
+                            alt='Card meta img'
                             size="default"
                             src='https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/card-meta-avatar-docs-demo.jpg'
                         />
@@ -228,7 +231,7 @@ function Demo() {
                         </article>
                     }
                 >
-                    <IconInfoCircle style={{color:'var(--semi-color-primary)'}}/>
+                    <IconInfoCircle style={{ color: 'var(--semi-color-primary)' }}/>
                 </Popover>
             </Card>
         </div>
@@ -258,6 +261,7 @@ function Demo() {
                     description="全面、易用、优质" 
                     avatar={
                         <Avatar 
+                            alt='Card meta img'
                             size="default"
                             src='https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/card-meta-avatar-docs-demo.jpg'
                         />
@@ -348,7 +352,7 @@ function Demo() {
                 padding: 20
             }}
         >
-            <Row gutter={[16,16]}>
+            <Row gutter={[16, 16]}>
                 <Col span={8}>
                     <Card title='Card Title' bordered={false} >
                         Card Content
@@ -365,7 +369,7 @@ function Demo() {
                     </Card>
                 </Col>
             </Row>
-            <Row gutter={[16,16]}>
+            <Row gutter={[16, 16]}>
                 <Col span={16}>
                     <Card title='Card Title' bordered={false} >
                         Card Content
@@ -439,7 +443,7 @@ function Demo() {
                     <Meta 
                         title={
                             <Skeleton
-                                style={{ width:80 }}
+                                style={{ width: 80 }}
                                 placeholder={<Title />}
                                 loading={loading}
                             >
@@ -450,7 +454,7 @@ function Demo() {
                         } 
                         description={
                             <Skeleton 
-                                style={{ width:150, marginTop: 12 }} 
+                                style={{ width: 150, marginTop: 12 }} 
                                 placeholder={<Paragraph rows={1} />} 
                                 loading={loading}
                             >
@@ -462,6 +466,7 @@ function Demo() {
                         avatar={
                             <Skeleton placeholder={<Skeleton.Avatar />} loading={loading}>
                                 <Avatar 
+                                    alt='Card meta img'
                                     size="default"
                                     src='https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/card-meta-avatar-docs-demo.jpg'
                                 />
@@ -582,19 +587,19 @@ function Demo() {
                 defaultValue={12}
                 max={40}
                 min={10}
-                style={{ width:360 }}
+                style={{ width: 360 }}
                 onChange={v=> setSpacing(v)}
             />
             <br />
             <CardGroup spacing={spacing}>
                 {
-                    new Array(8).fill(null).map((v,idx)=>(
+                    new Array(8).fill(null).map((v, idx)=>(
                         <Card 
                             key={idx}
                             shadows='hover'
                             title='Card title'
                             headerLine={false}
-                            style={{ width:260 }}
+                            style={{ width: 260 }}
                             headerExtraContent={
                                 <Text link>
                                     More
@@ -626,13 +631,13 @@ function Demo() {
     return (
         <CardGroup type='grid'>
             {
-                new Array(7).fill(null).map((v,idx)=>(
+                new Array(7).fill(null).map((v, idx)=>(
                     <Card 
                         key={idx}
                         shadows='hover'
                         title='Card title'
                         headerLine={false}
-                        style={{ width:260 }}
+                        style={{ width: 260 }}
                         headerExtraContent={
                             <Text link>
                                 More
@@ -691,6 +696,29 @@ function Demo() {
 |style      |内联样式|CSSProperties|-     |1.21.0|
 |title      |标题   |ReactNode    |-     |1.21.0|
 
+## Accessibility
+
+- Card 支持传入 `aria-label` 来表示该 Card 作用
+- Card loading 时，将开启 `aria-busy`
+- Card 为容器型组件，卡片内部的任何元素需要遵循各自的可访问性指南
+
+## 文案规范
+
+- 卡片标题
+  - 卡片标题应具有信息描述性，聚焦最重要的信息
+  - 尽量将标题限制在 1 个短语或句段中
+  - 卡片标题应句子大小写书写
+  - 不要以标点符号结尾（除了问号）
+- 正文
+  - 可操作的：使用祈使句而不是“你可以”来描述正文，可以更好的告诉用户可以做什么
+  
+| ✅ 推荐用法 | ❌ 不推荐用法 |   
+| --- | --- | 
+| Get order progress for details | You can get order progress for details |
+
+- 总是优先说最重要的信息
+- 使用 “Need to”而不是”must“
+
 ## 设计变量
 <DesignToken/>
 
@@ -699,3 +727,5 @@ function Demo() {
 ```material
 41,55,64,74,219,73,84,99,179
 ``` -->
+## 相关物料
+<semi-material-list code="41, 179"></semi-material-list>

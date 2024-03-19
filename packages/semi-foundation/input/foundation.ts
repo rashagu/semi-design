@@ -2,11 +2,11 @@ import BaseFoundation, { DefaultAdapter, noopFunction } from '../base/foundation
 import { strings } from './constants';
 import { noop, set, isNumber, isString, isFunction } from 'lodash';
 
-const ENTER_KEY_CODE = 'Enter';
+import { ENTER_KEY } from './../utils/keyCode';
 
 export interface InputDefaultAdapter {
     notifyChange: noopFunction;
-    setValue: noopFunction;
+    setValue: noopFunction
 }
 
 export interface InputAdapter extends Partial<DefaultAdapter>, Partial<InputDefaultAdapter> {
@@ -15,14 +15,14 @@ export interface InputAdapter extends Partial<DefaultAdapter>, Partial<InputDefa
     notifyBlur(value: any, e: any): void;
     setEyeClosed(eyeClosed: boolean): void;
     toggleFocusing(focused: boolean): void;
+    focusInput(): void;
     notifyFocus(value: any, e: any): void;
     notifyInput(e: any): void;
     notifyKeyDown(e: any): void;
     notifyKeyUp(e: any): void;
     notifyKeyPress(e: any): void;
     notifyEnterPress(e: any): void;
-    setPaddingLeft(paddingLeft: string): void;
-    isEventTarget(e: any): boolean;
+    isEventTarget(e: any): boolean
 }
 
 class InputFoundation extends BaseFoundation<InputAdapter> {
@@ -51,7 +51,6 @@ class InputFoundation extends BaseFoundation<InputAdapter> {
         }
     }
 
-    // eslint-disable-next-line
     setDisable() {}
 
     _setInitValue() {
@@ -120,7 +119,6 @@ class InputFoundation extends BaseFoundation<InputAdapter> {
         if (isNumber(maxLength) && maxLength >= 0 && isFunction(getValueLength) && isString(value)) {
             const valueLength = getValueLength(value);
             if (valueLength > maxLength) {
-                // eslint-disable-next-line max-len
                 console.warn('[Semi Input] The input character is truncated because the input length exceeds the maximum length limit');
                 const truncatedValue = this.handleTruncateValue(value, maxLength);
                 return truncatedValue;
@@ -199,6 +197,7 @@ class InputFoundation extends BaseFoundation<InputAdapter> {
         }
         // do not handle bubbling up events
         if (this._adapter.isEventTarget(e)) {
+            this._adapter.focusInput();
             this._adapter.toggleFocusing(true);
         }
     }
@@ -213,6 +212,7 @@ class InputFoundation extends BaseFoundation<InputAdapter> {
 
     handleClickEye(e: any) {
         const eyeClosed = this._adapter.getState('eyeClosed');
+        this._adapter.focusInput();
         this._adapter.toggleFocusing(true);
         this._adapter.setEyeClosed(!eyeClosed);
     }
@@ -261,19 +261,15 @@ class InputFoundation extends BaseFoundation<InputAdapter> {
 
     handleKeyPress(e: any) {
         this._adapter.notifyKeyPress(e);
-        if (e.key === ENTER_KEY_CODE) {
+        if (e.key === ENTER_KEY) {
             this._adapter.notifyEnterPress(e);
         }
     }
 
-    setPaddingLeft(paddingLeft: string) {
-        this._adapter.setPaddingLeft(paddingLeft);
-    }
-
     isAllowClear() {
         const { value, isFocus, isHovering } = this._adapter.getStates();
-        const { showClear, disabled } = this._adapter.getProps();
-        const allowClear = value && showClear && !disabled && (isFocus || isHovering);
+        const { showClear, disabled, showClearIgnoreDisabled } = this._adapter.getProps();
+        const allowClear = value && showClear && (!disabled || showClearIgnoreDisabled) && (isFocus || isHovering);
         return allowClear;
     }
 
@@ -281,6 +277,7 @@ class InputFoundation extends BaseFoundation<InputAdapter> {
         const { disabled } = this._adapter.getProps();
         const { isFocus } = this._adapter.getStates();
         if (!disabled && !isFocus) {
+            this._adapter.focusInput();
             this._adapter.toggleFocusing(true);
         }
     }
@@ -292,6 +289,17 @@ class InputFoundation extends BaseFoundation<InputAdapter> {
     handlePreventMouseDown(e: any) {
         if (e && isFunction(e.preventDefault)) {
             e.preventDefault();
+        }
+    }
+
+    /**
+     * A11y: simulate password button click
+     */
+    handleModeEnterPress(e: any) {
+        // trigger by Enter or Space key
+        if (['Enter', ' '].includes(e?.key)) {
+            this.handlePreventMouseDown(e);
+            this.handleClickEye(e);
         }
     }
 }

@@ -1,13 +1,15 @@
-import React, { PureComponent, ReactNode, MouseEventHandler, MouseEvent, CSSProperties, SVGProps, FC } from 'react';
+import React, { Component, ReactNode, MouseEventHandler, MouseEvent, CSSProperties, SVGProps, FC } from 'react';
 import cls from 'classnames';
 import PropTypes from 'prop-types';
 import { cssClasses, strings } from '@douyinfe/semi-foundation/upload/constants';
+import FileCardFoundation, { FileCardAdapter } from '@douyinfe/semi-foundation/upload/fileCardFoundation';
 import { getFileSize } from '@douyinfe/semi-foundation/upload/utils';
-import { IconAlertCircle, IconClose, IconFile, IconRefresh } from '@douyinfe/semi-icons';
+import { IconAlertCircle, IconClose, IconClear, IconFile, IconRefresh, IconEyeOpened } from '@douyinfe/semi-icons';
 import LocaleConsumer from '../locale/localeConsumer';
 import { Locale } from '../locale/interface';
+import BaseComponent from '../_base/baseComponent';
 
-import IconButton from '../iconButton/index';
+import Button from '../button/index';
 import Progress from '../progress/index';
 import Tooltip from '../tooltip/index';
 import Spin from '../spin/index';
@@ -17,7 +19,7 @@ import { RenderFileItemProps } from './interface';
 const prefixCls = cssClasses.PREFIX;
 
 const ErrorSvg: FC<SVGProps<SVGSVGElement>> = (props = {}) => (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <svg focusable={false} aria-hidden width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
         <circle cx="7.99992" cy="7.99992" r="6.66667" fill="white" />
         <path
             fillRule="evenodd"
@@ -28,7 +30,7 @@ const ErrorSvg: FC<SVGProps<SVGSVGElement>> = (props = {}) => (
 );
 
 const ReplaceSvg: FC<SVGProps<SVGSVGElement>> = (props = {}) => (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <svg focusable={false} aria-hidden width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
         <circle cx="14" cy="14" r="14" fill="#16161A" fillOpacity="0.6" />
         <path d="M9 10.25V18.25L10.25 13.25H17.875V11.75C17.875 11.4739 17.6511 11.25 17.375 11.25H14L12.75 9.75H9.5C9.22386 9.75 9 9.97386 9 10.25Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
         <path d="M18 18.25L19 13.25H10.2031L9 18.25H18Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
@@ -36,7 +38,7 @@ const ReplaceSvg: FC<SVGProps<SVGSVGElement>> = (props = {}) => (
 );
 
 const DirectorySvg: FC<SVGProps<SVGSVGElement>> = (props = {}) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <svg focusable={false} aria-hidden width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path d="M6 17V7.58824C6 7.26336 6.26863 7 6.6 7H10.5L12 8.76471H16.05C16.3814 8.76471 16.65 9.02806 16.65 9.35294V11.1176H7.5L6 17ZM6 17L7.44375 11.1176H18L16.8 17L6 17Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
 
@@ -45,10 +47,15 @@ const DirectorySvg: FC<SVGProps<SVGSVGElement>> = (props = {}) => (
 export interface FileCardProps extends RenderFileItemProps {
     className?: string;
     style?: CSSProperties;
+    picWidth?: string | number;
+    picHeight?: string | number
 }
 
+export interface FileCardState {
+    fallbackPreview?: boolean
+}
 
-class FileCard extends PureComponent<FileCardProps> {
+class FileCard extends BaseComponent<FileCardProps, FileCardState> {
     static propTypes = {
         className: PropTypes.string,
         disabled: PropTypes.bool,
@@ -61,6 +68,8 @@ class FileCard extends PureComponent<FileCardProps> {
         percent: PropTypes.number,
         preview: PropTypes.bool,
         previewFile: PropTypes.func,
+        picWidth: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+        picHeight: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
         showReplace: PropTypes.bool,
         showRetry: PropTypes.bool,
         size: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
@@ -79,6 +88,21 @@ class FileCard extends PureComponent<FileCardProps> {
         preview: false,
         size: '',
     };
+
+    constructor(props: FileCardProps) {
+        super(props);
+        this.state = {
+            fallbackPreview: false,
+        };
+        this.foundation = new FileCardFoundation(this.adapter);
+    }
+
+    get adapter(): FileCardAdapter<FileCardProps, FileCardState> {
+        return {
+            ...super.adapter,
+            updateFallbackPreview: (fallbackPreview: boolean): void => this.setState({ fallbackPreview }),
+        };
+    }
 
     transSize(size: string | number): string {
         if (typeof size === 'number') {
@@ -123,59 +147,81 @@ class FileCard extends PureComponent<FileCardProps> {
     }
 
     renderPic(locale: Locale['Upload']): ReactNode {
-        const { url, percent, status, disabled, style, onPreviewClick, showPicInfo, renderPicInfo, renderThumbnail, name, index } = this.props;
+        const { fallbackPreview } = this.state;
+        const { url, percent, status, disabled, style, onPreviewClick, showPicInfo, renderPicInfo, renderPicPreviewIcon, renderThumbnail, name, index, picHeight, picWidth } = this.props;
         const showProgress = status === strings.FILE_STATUS_UPLOADING && percent !== 100;
         const showRetry = status === strings.FILE_STATUS_UPLOAD_FAIL && this.props.showRetry;
         const showReplace = status === strings.FILE_STATUS_SUCCESS && this.props.showReplace;
+        const showPreview = status === strings.FILE_STATUS_SUCCESS && !this.props.showReplace;
         const filePicCardCls = cls({
             [`${prefixCls}-picture-file-card`]: true,
+            [`${prefixCls}-picture-file-card-preview-fallback`]: fallbackPreview,
             [`${prefixCls}-picture-file-card-disabled`]: disabled,
             [`${prefixCls}-picture-file-card-show-pointer`]: typeof onPreviewClick !== 'undefined',
             [`${prefixCls}-picture-file-card-error`]: status === strings.FILE_STATUS_UPLOAD_FAIL,
             [`${prefixCls}-picture-file-card-uploading`]: showProgress
         });
-        const closeCls = `${prefixCls}-picture-file-card-close`;
         const retry = (
-            <div
-                className={`${prefixCls}-picture-file-card-retry`} onClick={e => this.onRetry(e)}>
+            <div role="button" tabIndex={0} className={`${prefixCls}-picture-file-card-retry`} onClick={e => this.onRetry(e)}>
                 <IconRefresh className={`${prefixCls}-picture-file-card-icon-retry`} />
             </div>
         );
         const replace = (
             <Tooltip trigger="hover" position="top" content={locale.replace} showArrow={false} spacing={4}>
-                <div
-                    className={`${prefixCls}-picture-file-card-replace`} onClick={(e): void => this.onReplace(e)}>
+                <div role="button" tabIndex={0} className={`${prefixCls}-picture-file-card-replace`} onClick={(e): void => this.onReplace(e)}>
                     <ReplaceSvg className={`${prefixCls}-picture-file-card-icon-replace`} />
                 </div>
             </Tooltip>
-
+        );
+        const preview = (
+            <div className={`${prefixCls}-picture-file-card-preview`}>
+                {typeof renderPicPreviewIcon === 'function'? renderPicPreviewIcon(this.props): null}
+            </div>
+        );
+        const close = (
+            <div role="button" tabIndex={0} className={`${prefixCls}-picture-file-card-close`} onClick={e => this.onRemove(e)}>
+                <IconClear className={`${prefixCls}-picture-file-card-icon-close`} />
+            </div>
         );
 
         const picInfo = typeof renderPicInfo === 'function' ? renderPicInfo(this.props) : (
             <div className={`${prefixCls }-picture-file-card-pic-info`}>{index + 1}</div>
         );
 
-        const thumbnail = typeof renderThumbnail === 'function' ? renderThumbnail(this.props) : <img src={url} alt={`picture of ${name}`} />;
+        let imgStyle: { height?: number | string; width?: number | string } = {};
+        let itemStyle = style ? { ...style } : {};
+
+        if (picHeight) {
+            itemStyle.height = picHeight;
+            imgStyle.height = picHeight;
+        }
+
+        if (picWidth) {
+            itemStyle.width = picWidth;
+            imgStyle.width = picWidth;
+        }
+        
+        const defaultThumbTail = !fallbackPreview ? <img src={url} alt={name} onError={error => this.foundation.handleImageError(error)} style={imgStyle}/> : <IconFile size="large" />;
+
+        const thumbnail = typeof renderThumbnail === 'function' ? renderThumbnail(this.props) : defaultThumbTail;
 
         return (
-            <div className={filePicCardCls} style={style} onClick={onPreviewClick}>
+            <div role="listitem" className={filePicCardCls} style={itemStyle} onClick={onPreviewClick}>
                 {thumbnail}
-                {showProgress ? <Progress percent={percent} type="circle" size="small" orbitStroke={'#FFF'} /> : null}
+                {showProgress ? <Progress percent={percent} type="circle" size="small" orbitStroke={'#FFF'} aria-label="uploading file progress" /> : null}
                 {showRetry ? retry : null}
                 {showReplace && replace}
+                {showPreview && preview}
                 {showPicInfo && picInfo}
-                {!disabled && (
-                    <div className={closeCls}>
-                        <IconClose size="extra-small" onClick={e => this.onRemove(e)} />
-                    </div>
-                )}
+                {!disabled && close}
                 {this.renderPicValidateMsg()}
             </div>
         );
     }
 
     renderFile(locale: Locale["Upload"]) {
-        const { name, size, percent, url, showRetry: propsShowRetry, showReplace: propsShowReplace, preview, previewFile, status, style, onPreviewClick } = this.props;
+        const { name, size, percent, url, showRetry: propsShowRetry, showReplace: propsShowReplace, preview, previewFile, status, style, onPreviewClick, renderFileOperation } = this.props;
+        const { fallbackPreview } = this.state;
         const fileCardCls = cls({
             [`${prefixCls}-file-card`]: true,
             [`${prefixCls}-file-card-fail`]: status === strings.FILE_STATUS_VALID_FAIL || status === strings.FILE_STATUS_UPLOAD_FAIL,
@@ -183,7 +229,7 @@ class FileCard extends PureComponent<FileCardProps> {
         });
         const previewCls = cls({
             [`${prefixCls}-file-card-preview`]: true,
-            [`${prefixCls}-file-card-preview-placeholder`]: !preview || previewFile
+            [`${prefixCls}-file-card-preview-placeholder`]: !preview || previewFile || fallbackPreview
         });
         const infoCls = `${prefixCls}-file-card-info`;
         const closeCls = `${prefixCls}-file-card-close`;
@@ -193,12 +239,13 @@ class FileCard extends PureComponent<FileCardProps> {
         const showRetry = status === strings.FILE_STATUS_UPLOAD_FAIL && propsShowRetry;
         const showReplace = status === strings.FILE_STATUS_SUCCESS && propsShowReplace;
         const fileSize = this.transSize(size);
-        let previewContent: ReactNode = preview ? (<img src={url} />) : (<IconFile size="large" />);
+        let previewContent: ReactNode = (preview && !fallbackPreview) ? (<img src={url} alt={name} onError={(error) => this.foundation.handleImageError(error)} />) : (<IconFile size="large" />);
         if (previewFile) {
             previewContent = previewFile(this.props);
         }
+        const operation = typeof renderFileOperation === 'function'? renderFileOperation(this.props) : <Button onClick={e => this.onRemove(e)} type="tertiary" icon={<IconClose />} theme="borderless" size="small" className={closeCls} />;
         return (
-            <div className={fileCardCls} style={style} onClick={onPreviewClick}>
+            <div role="listitem" className={fileCardCls} style={style} onClick={onPreviewClick}>
                 <div className={previewCls}>
                     {previewContent}
                 </div>
@@ -211,7 +258,7 @@ class FileCard extends PureComponent<FileCardProps> {
                             <span className={`${infoCls}-size`}>{fileSize}</span>
                             {showReplace && (
                                 <Tooltip trigger="hover" position="top" showArrow={false} content={locale.replace}>
-                                    <IconButton
+                                    <Button
                                         onClick={e => this.onReplace(e)}
                                         type="tertiary"
                                         theme="borderless"
@@ -225,39 +272,32 @@ class FileCard extends PureComponent<FileCardProps> {
                         </span>
 
                     </div>
-                    {showProgress ? (<Progress percent={percent} style={{ width: '100%' }} />) : null}
+                    {showProgress ? (<Progress percent={percent} style={{ width: '100%' }} aria-label="uploading file progress" />) : null}
                     <div className={`${infoCls}-main-control`}>
                         <span className={`${infoCls}-validate-message`}>
                             {this.renderValidateMessage()}
                         </span>
-                        {showRetry ? <span className={`${infoCls}-retry`} onClick={e => this.onRetry(e)}>{locale.retry}</span> : null}
+                        {showRetry ? <span role="button" tabIndex={0} className={`${infoCls}-retry`} onClick={e => this.onRetry(e)}>{locale.retry}</span> : null}
                     </div>
                 </div>
-                <IconButton
-                    onClick={e => this.onRemove(e)}
-                    type="tertiary"
-                    icon={<IconClose />}
-                    theme="borderless"
-                    size="small"
-                    className={closeCls}
-                />
+                {operation}
             </div>
         );
     }
 
     onRemove(e: MouseEvent): void {
         e.stopPropagation();
-        this.props.onRemove(this.props, e);
+        this.props.onRemove();
     }
 
     onReplace(e: MouseEvent): void {
         e.stopPropagation();
-        this.props.onReplace(this.props, e);
+        this.props.onReplace();
     }
 
     onRetry(e: MouseEvent): void {
         e.stopPropagation();
-        this.props.onRetry(this.props, e);
+        this.props.onRetry();
     }
 
     render() {

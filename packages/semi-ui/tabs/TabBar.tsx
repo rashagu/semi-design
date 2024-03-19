@@ -7,19 +7,21 @@ import OverflowList from '../overflowList';
 import Dropdown from '../dropdown';
 import Button from '../button';
 import { TabBarProps, PlainTab } from './interface';
-import { isEmpty } from 'lodash';
+import { isEmpty, pick } from 'lodash';
 import { IconChevronRight, IconChevronLeft, IconClose } from '@douyinfe/semi-icons';
 import { getUuidv4 } from '@douyinfe/semi-foundation/utils/uuid';
+import TabItem from './TabItem';
 
 export interface TabBarState {
     endInd: number;
     rePosKey: number;
     startInd: number;
+    uuid: string
 }
 
 export interface OverflowItem extends PlainTab {
     key: string;
-    active: boolean;
+    active: boolean
 }
 
 class TabBar extends React.Component<TabBarProps, TabBarState> {
@@ -38,16 +40,20 @@ class TabBar extends React.Component<TabBarProps, TabBarState> {
         deleteTabItem: PropTypes.func
     };
 
-    uuid: string;
-
     constructor(props: TabBarProps) {
         super(props);
         this.state = {
             endInd: props.list.length,
             rePosKey: 0,
             startInd: 0,
+            uuid: '',
         };
-        this.uuid = getUuidv4();
+    }
+
+    componentDidMount() {
+        this.setState({
+            uuid: getUuidv4(),
+        });
     }
 
     renderIcon(icon: ReactNode): ReactNode {
@@ -70,7 +76,7 @@ class TabBar extends React.Component<TabBarProps, TabBarState> {
         if (tabBarExtraContent) {
             const tabBarStyle = { ...tabBarExtraContentDefaultStyle, ...tabBarExtraContentStyle };
             return (
-                <div className={extraCls} style={tabBarStyle}>
+                <div className={extraCls} style={tabBarStyle} x-semi-prop="tabBarExtraContent">
                     {tabBarExtraContent}
                 </div>
             );
@@ -82,62 +88,55 @@ class TabBar extends React.Component<TabBarProps, TabBarState> {
         this.props.onTabClick(itemKey, e);
         if (this.props.collapsible) {
             const key = this._getItemKey(itemKey);
-            // eslint-disable-next-line max-len
-            const tabItem = document.querySelector(`[data-uuid="${this.uuid}"] .${cssClasses.TABS_TAB}[data-scrollkey="${key}"]`);
+            const tabItem = document.querySelector(`[data-uuid="${this.state.uuid}"] .${cssClasses.TABS_TAB}[data-scrollkey="${key}"]`);
             tabItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
         }
     };
 
+    handleKeyDown = (event: React.KeyboardEvent, itemKey: string, closable: boolean) => {
+        this.props.handleKeyDown(event, itemKey, closable);
+    }
+
     renderTabItem = (panel: PlainTab): ReactNode => {
-        const { size, type, deleteTabItem } = this.props;
-        const panelIcon = panel.icon ? this.renderIcon(panel.icon) : null;
-        const closableIcon = (type === 'card' && panel.closable) ? <IconClose className={`${cssClasses.TABS_TAB}-icon-close`} onClick={(e: React.MouseEvent<HTMLSpanElement>) => deleteTabItem(panel.itemKey, e)} /> : null;
-        let events = {};
-        const key = panel.itemKey;
-        if (!panel.disabled) {
-            events = {
-                onClick: (e: MouseEvent<HTMLDivElement>): void => this.handleItemClick(key, e),
-            };
-        }
-        const className = cls(cssClasses.TABS_TAB, {
-            [cssClasses.TABS_TAB_ACTIVE]: this._isActive(key),
-            [cssClasses.TABS_TAB_DISABLED]: panel.disabled,
-            [`${cssClasses.TABS_TAB}-small`]: size === 'small',
-            [`${cssClasses.TABS_TAB}-medium`]: size === 'medium',
-        });
+        const { size, type, deleteTabItem, handleKeyDown, tabPosition } = this.props;
+        const isSelected = this._isActive(panel.itemKey);
+        
         return (
-            <div
-                role="tab"
-                aria-disabled={panel.disabled ? 'true' : 'false'}
-                aria-selected={this._isActive(key) ? 'true' : 'false'}
-                {...events}
-                className={className}
-                key={this._getItemKey(key)}
-            >
-                {panelIcon}
-                {panel.tab}
-                {closableIcon}
-            </div>
+            <TabItem
+                {...pick(panel, ['disabled', 'icon', 'itemKey', 'tab', 'closable'])}
+                key={this._getItemKey(panel.itemKey)} 
+                selected={isSelected}
+                size={size}
+                type={type}
+                tabPosition={tabPosition}
+                handleKeyDown={handleKeyDown}
+                deleteTabItem={deleteTabItem}
+                onClick={this.handleItemClick}
+            />
         );
     };
 
     renderTabComponents = (list: Array<PlainTab>): Array<ReactNode> => list.map(panel => this.renderTabItem(panel));
 
     handleArrowClick = (items: Array<OverflowItem>, pos: 'start' | 'end'): void => {
-        const inline = pos === 'start' ? 'end' : 'start';
         const lastItem = pos === 'start' ? items.pop() : items.shift();
         if (!lastItem) {
             return;
         }
         const key = this._getItemKey(lastItem.itemKey);
-        // eslint-disable-next-line max-len
-        const tabItem = document.querySelector(`[data-uuid="${this.uuid}"] .${cssClasses.TABS_TAB}[data-scrollkey="${key}"]`);
-        tabItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline });
+        const tabItem = document.querySelector(`[data-uuid="${this.state.uuid}"] .${cssClasses.TABS_TAB}[data-scrollkey="${key}"]`);
+        tabItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
     };
 
     renderCollapse = (items: Array<OverflowItem>, icon: ReactNode, pos: 'start' | 'end'): ReactNode => {
         if (isEmpty(items)) {
-            return null;
+            return (
+                <Button
+                    disabled={true}
+                    icon={icon}
+                    theme="borderless"
+                />
+            );
         }
         const { dropdownClassName, dropdownStyle } = this.props;
         const { rePosKey } = this.state;
@@ -181,8 +180,9 @@ class TabBar extends React.Component<TabBarProps, TabBarState> {
                 showTick
                 style={dropdownStyle}
                 trigger={'hover'}
+                disableFocusListener // prevent the panel from popping up again after clicking
             >
-                <div className={arrowCls} onClick={(e): void => this.handleArrowClick(items, pos)}>
+                <div role="presentation" className={arrowCls} onClick={(e): void => this.handleArrowClick(items, pos)}>
                     <Button
                         disabled={disabled}
                         icon={icon}
@@ -233,7 +233,7 @@ class TabBar extends React.Component<TabBarProps, TabBarState> {
         const contents = collapsible ? this.renderCollapsedTab() : this.renderTabComponents(list);
 
         return (
-            <div role="tab-list" className={classNames} style={style} {...getDataAttr(restProps)} data-uuid={this.uuid}>
+            <div role="tablist" aria-orientation={tabPosition === "left" ? "vertical" : "horizontal"} className={classNames} style={style} {...getDataAttr(restProps)} data-uuid={this.state.uuid}>
                 {contents}
                 {extra}
             </div>

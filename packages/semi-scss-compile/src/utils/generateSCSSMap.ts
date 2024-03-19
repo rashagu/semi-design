@@ -1,5 +1,5 @@
 import path from 'path';
-import fs from "fs-extra";
+import fs from 'fs-extra';
 import { set } from 'lodash';
 
 const lodash = { set };
@@ -38,13 +38,13 @@ const generateComponentsScssMap = (foundationPath: string, iconPath?: string) =>
 
 
 const generateThemeScssMap = (themePath: string) => {
-    const fileList = ['_font.scss', '_palette.scss', 'global.scss', 'index.scss', 'local.scss', 'mixin.scss', 'variables.scss'] as const;
+    const fileList = ['_font.scss', '_palette.scss', 'global.scss', 'animation.scss', 'index.scss', 'local.scss', 'mixin.scss', 'variables.scss'] as const;
     const themeScssMap: { [key in typeof fileList[number]]?: string } = {};
     for (const fileName of fileList) {
         const scssAbsolutePath = path.join(themePath, 'scss', fileName);
         if (fs.existsSync(scssAbsolutePath)) {
             //in theme folder
-            themeScssMap[fileName] = fs.readFileSync(scssAbsolutePath, { encoding: "utf8" });
+            themeScssMap[fileName] = fs.readFileSync(scssAbsolutePath, { encoding: 'utf8' });
         }
     }
     // console.log(themeScssMap)
