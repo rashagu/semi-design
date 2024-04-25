@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { Icon, Input, Button, Form, Popover, Tag, Typography, CheckboxGroup, TagInput, Switch, Tree } from '../../index';
 import TreeSelect from '../index';
 import { flattenDeep } from 'lodash';
@@ -2285,9 +2286,17 @@ export const triggerRenderAddMethod = () => {
     <>
       <TreeSelect
           triggerRender={renderTrigger1}
+          treeData={treeData}
+          placeholder='Single, Custom Trigger'
+          onChange={onValueChange}
+          style={{ width: 300 }}
+      />
+      <br />
+      <TreeSelect
+          triggerRender={renderTrigger1}
           multiple
           treeData={treeData}
-          placeholder='Custom Trigger'
+          placeholder='Multiple, custom Trigger'
           onChange={onValueChange}
           style={{ width: 300 }}
       />
@@ -2304,12 +2313,26 @@ export const triggerRenderAddMethod = () => {
       />
       <br />
       <TreeSelect
+          defaultExpandAll
           triggerRender={renderTrigger3}
           filterTreeNode
           searchPosition="trigger"
           multiple
           treeData={treeData}
           placeholder='Custom Trigger'
+          onChange={onValueChange}
+          style={{ width: 300 }}
+      />
+      <br />
+       <TreeSelect
+          defaultExpandAll
+          checkRelation={'unRelated'} 
+          triggerRender={renderTrigger3}
+          filterTreeNode
+          searchPosition="trigger"
+          multiple
+          treeData={treeData}
+          placeholder='multiple, checkRelation = unRelated'
           onChange={onValueChange}
           style={{ width: 300 }}
       />
@@ -2683,5 +2706,25 @@ export const Issue1542 = () => {
           onSearch={onSearch}
       />
     </>  
+  );
+};
+
+class WebComponentWrapper extends HTMLElement {
+  constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+  }
+
+  connectedCallback() {
+      ReactDOM.render(<_TreeSelect />, this.shadowRoot);
+  }
+}
+
+customElements.define('my-web-component', WebComponentWrapper);
+
+export const WebCompTestOutside = () => {
+
+  return (
+    <my-web-component></my-web-component>
   );
 };
